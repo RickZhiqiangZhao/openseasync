@@ -56,7 +56,7 @@ type Trait struct {
 	DisplayType     string `json:"display_type"`
 	MaxValue        int    `json:"max_value"`
 	TraitCount      int    `json:"trait_count"` // 数量
-	Order           string `json:"order"`
+	OrderBy         string `json:"order_by"`
 	IsDelete        int8   `json:"is_delete"` // 是否删除 1删除 0未删除 默认为0
 	Date            int    `json:"date"`      // 刷新时间
 }
@@ -174,7 +174,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				DisplayType:     v1.DisplayType,
 				MaxValue:        v1.MaxValue,
 				TraitCount:      v1.TraitCount,
-				Order:           v1.Order,
+				OrderBy:         v1.Order,
 				Date:            date,
 			}
 			var tmp3 Trait
@@ -297,6 +297,7 @@ func DeleteAssetByTokenID(contractAddress, tokenID string) error {
 
 func queryAssetsTopOwnerShip(db *gorm.DB, assets *OwnerAsset, date int) error {
 	for _, v := range assets.Assets {
+		time.Sleep(time.Second * time.Duration(1))
 		// If the number of requests is too many, a 429 error code will be thrown
 		resp, err := utils.RequestOpenSeaSingleAsset(v.AssetContract.Address, v.TokenID)
 		if err != nil {
@@ -337,7 +338,7 @@ func queryAssetsTopOwnerShip(db *gorm.DB, assets *OwnerAsset, date int) error {
 				}
 			}
 		}
-		time.Sleep(time.Second)
+
 	}
 	// Delete opensea deleted traits
 	if err := db.Table("assets_top_ownerships").

@@ -42,7 +42,6 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-
 	// sync collections
 	if err := openSeaOwnerCollectionsSync(owner); err != nil {
 		logs.GetLogger().Error(err)
