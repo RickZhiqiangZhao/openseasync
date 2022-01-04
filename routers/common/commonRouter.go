@@ -30,20 +30,20 @@ func GetSwanMinerVersion(c *gin.Context) {
 
 // sync opensea assets and collections
 func OpenSeaOwnerDataSync(c *gin.Context) {
-	owner := c.Param("owner")
-	if len(owner) != 42 {
+	user := c.Param("user")
+	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
 
 	// sync assets
-	if err := openSeaOwnerAssetsSync(owner); err != nil {
+	if err := openSeaOwnerAssetsSync(user); err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
 	// sync collections
-	if err := openSeaOwnerCollectionsSync(owner); err != nil {
+	if err := openSeaOwnerCollectionsSync(user); err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
@@ -53,12 +53,12 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
 func OpenSeaOwnerAssetsSync(c *gin.Context) {
-	owner := c.Param("owner")
-	if len(owner) != 42 {
+	user := c.Param("user")
+	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	if err := openSeaOwnerAssetsSync(owner); err != nil {
+	if err := openSeaOwnerAssetsSync(user); err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
@@ -68,12 +68,12 @@ func OpenSeaOwnerAssetsSync(c *gin.Context) {
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
 func OpenSeaOwnerCollectionsSync(c *gin.Context) {
-	owner := c.Param("owner")
-	if len(owner) != 42 {
+	user := c.Param("user")
+	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	if err := openSeaOwnerCollectionsSync(owner); err != nil {
+	if err := openSeaOwnerCollectionsSync(user); err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
@@ -82,12 +82,12 @@ func OpenSeaOwnerCollectionsSync(c *gin.Context) {
 }
 
 func GetAssetsByOwner(c *gin.Context) {
-	owner := c.Param("owner")
-	if len(owner) != 42 {
+	user := c.Param("user")
+	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetByOwner(owner)
+	assets, err := getAssetByOwner(user)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -97,12 +97,12 @@ func GetAssetsByOwner(c *gin.Context) {
 }
 
 func GetCollectionsByOwner(c *gin.Context) {
-	owner := c.Param("owner")
-	if len(owner) != 42 {
+	user := c.Param("user")
+	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	collections, err := getCollectionsByOwner(owner)
+	collections, err := getCollectionsByOwner(user)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -112,13 +112,13 @@ func GetCollectionsByOwner(c *gin.Context) {
 }
 
 func GetAssetsBySlug(c *gin.Context) {
-	owner := c.Param("owner")
+	user := c.Param("user")
 	slug := c.Param("slug")
-	if len(owner) != 42 && slug != "" {
+	if len(user) != 42 && slug != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetBySlug(owner, slug)
+	assets, err := getAssetBySlug(user, slug)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -128,13 +128,15 @@ func GetAssetsBySlug(c *gin.Context) {
 }
 
 func DeleteAssetByTokenID(c *gin.Context) {
+	user := c.Param("user")
 	contractAddress := c.Param("contract_address")
 	tokenID := c.Param("token_id")
-	if len(contractAddress) != 42 && tokenID != "" {
+
+	if len(user) != 42 && len(contractAddress) != 42 && tokenID != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	err := deleteAssetByTokenID(contractAddress, tokenID)
+	err := deleteAssetByTokenID(user, contractAddress, tokenID)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
@@ -144,13 +146,13 @@ func DeleteAssetByTokenID(c *gin.Context) {
 }
 
 func DeleteCollectionBySlug(c *gin.Context) {
-	owner := c.Param("owner")
+	user := c.Param("user")
 	slug := c.Param("slug")
-	if len(owner) != 42 && slug != "" {
+	if len(user) != 42 && slug != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	err := deleteCollectionBySlug(owner, slug)
+	err := deleteCollectionBySlug(user, slug)
 	if err == models.CONNOT_DELETE_COLLECTION_ERR {
 		c.JSON(http.StatusOK, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return

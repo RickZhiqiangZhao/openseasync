@@ -20,11 +20,11 @@ func getSwanMinerHostInfo() *common.HostInfo {
 }
 
 // openSeaOwnerAssetsSync get all assets by owner
-func openSeaOwnerAssetsSync(owner string) error {
+func openSeaOwnerAssetsSync(user string) error {
 	var n int64 = 1
 	for {
 		// If the number of requests is too many, a 429 error code will be thrown
-		content, err := utils.RequestOpenSeaAssets(owner, 50*(n-1), 50)
+		content, err := utils.RequestOpenSeaAssets(user, 50*(n-1), 50)
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -37,7 +37,7 @@ func openSeaOwnerAssetsSync(owner string) error {
 		if len(assets.Assets) < 1 {
 			break
 		}
-		if err = models.InsertOpenSeaAsset(&assets, owner); err != nil {
+		if err = models.InsertOpenSeaAsset(&assets, user); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
@@ -52,10 +52,11 @@ func openSeaOwnerAssetsSync(owner string) error {
 }
 
 // openSeaOwnerCollectionsSync get all collections by owner
-func openSeaOwnerCollectionsSync(owner string) error {
+func openSeaOwnerCollectionsSync(user string) error {
 	var n int64 = 1
 	for {
-		content, err := utils.RequestOpenSeaCollections(owner, 300*(n-1), 300*n)
+		time.Sleep(time.Second * 2)
+		content, err := utils.RequestOpenSeaCollections(user, 300*(n-1), 300*n)
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -65,7 +66,7 @@ func openSeaOwnerCollectionsSync(owner string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
-		if err = models.InsertOpenSeaCollection(&collections, owner); err != nil {
+		if err = models.InsertOpenSeaCollection(&collections, user); err != nil {
 			return err
 		}
 		if len(collections.Collections) < 300 {
@@ -78,8 +79,8 @@ func openSeaOwnerCollectionsSync(owner string) error {
 }
 
 // getAssetByOwner get assets by owner
-func getAssetByOwner(owner string) ([]*models.Asset, error) {
-	assets, err := models.FindAssetByOwner(owner)
+func getAssetByOwner(user string) ([]*models.Asset, error) {
+	assets, err := models.FindAssetByOwner(user)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -88,8 +89,8 @@ func getAssetByOwner(owner string) ([]*models.Asset, error) {
 }
 
 // getAssetBySlug get assets by owner
-func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
-	assets, err := models.FindWorksBySlug(owner, slug)
+func getAssetBySlug(user, slug string) ([]*models.Asset, error) {
+	assets, err := models.FindWorksBySlug(user, slug)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -98,8 +99,8 @@ func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
 }
 
 // getCollectionsByOwner get collection by owner
-func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
-	collections, err := models.FindCollectionByOwner(owner)
+func getCollectionsByOwner(user string) ([]*models.Collection, error) {
+	collections, err := models.FindCollectionByOwner(user)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -108,8 +109,8 @@ func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
 }
 
 // deleteAssetByTokenID delete asset
-func deleteAssetByTokenID(contractAddress, tokenID string) error {
-	if err := models.DeleteAssetByTokenID(contractAddress, tokenID); err != nil {
+func deleteAssetByTokenID(user, contractAddress, tokenID string) error {
+	if err := models.DeleteAssetByTokenID(user, contractAddress, tokenID); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -117,8 +118,8 @@ func deleteAssetByTokenID(contractAddress, tokenID string) error {
 }
 
 // deleteCollectionBySlug delete collection
-func deleteCollectionBySlug(owner, slug string) error {
-	if err := models.DeleteCollectionBySlug(owner, slug); err != nil {
+func deleteCollectionBySlug(user, slug string) error {
+	if err := models.DeleteCollectionBySlug(user, slug); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}

@@ -21,7 +21,7 @@ create table if not exists assets
 	token_metadata text null,
 	slug varchar(255) not null,
 	is_delete int null,
-	date int null
+    refresh_time int null
 )
 charset=utf8mb4;
 
@@ -29,13 +29,14 @@ create table if not exists assets_top_ownerships
 (
 	id bigint auto_increment
 		primary key,
+    user_address char(42) not null,
 	contract_address char(42) not null,
 	token_id varchar(128) not null,
 	owner char(42) not null,
 	profile_img_url text null,
 	quantity varchar(128) null,
 	is_delete int null,
-	date int null
+    refresh_time int null
 )
 charset=utf8mb4;
 
@@ -44,7 +45,7 @@ create table if not exists collections
 	id bigint auto_increment
 		primary key,
 	slug varchar(255) not null,
-	owner char(42) not null,
+    user_address char(42) not null,
 	name varchar(255) null,
 	banner_image_url text null,
 	description text null,
@@ -52,7 +53,12 @@ create table if not exists collections
 	large_image_url text null,
 	is_delete int null,
 	create_date varchar(32) null,
-	date int null
+    refresh_time int null,
+    num_owners int null,
+    total_supply int null,
+    total_volume float null,
+    owned_asset_count varchar(64) null
+
 )
 charset=utf8mb4;
 
@@ -74,6 +80,7 @@ create table if not exists traits
 (
 	id bigint auto_increment
 		primary key,
+    user_address char(42) not null,
 	contract_address char(42) not null,
 	token_id varchar(128) not null,
 	trait_type varchar(255) null,
@@ -83,6 +90,6 @@ create table if not exists traits
 	trait_count int null,
 	order_by varchar(255) null,
 	is_delete int null,
-	date int null
+    refresh_time int null
 )
 charset=utf8mb4;
