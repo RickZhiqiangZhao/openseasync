@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
 	"openseasync/common/constants"
@@ -14,10 +13,12 @@ import (
 
 func main() {
 	// init database
-	db := database.InitMongo()
+	db := database.Init()
 	config.InitConfig("")
+
+
 	defer func() {
-		err := db.Disconnect(context.TODO())
+		err := db.Close()
 		if err != nil {
 			logs.GetLogger().Error(err)
 		}
@@ -41,5 +42,3 @@ func main() {
 		logs.GetLogger().Fatal(err)
 	}
 }
-
-// db.createUser({ user: "root", pwd: "123456", roles: [ { role: "root", db: "admin"} ]})
