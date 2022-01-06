@@ -2,6 +2,90 @@ package models
 
 import "math/big"
 
+type Asset struct {
+	//ID                int64  `json:"id" bson:"id"`                                   // 主键
+	UserAddress       string `json:"user_address" bson:"user_address"`               // 用户地址
+	Title             string `json:"title" bson:"title"`                             // NFT作品标题
+	ImageURL          string `json:"image_url" bson:"image_url"`                     // NFT作品图片
+	ImagePreviewURL   string `json:"image_preview_url" bson:"image_preview_url"`     // NFT作品原图
+	ImageThumbnailURL string `json:"image_thumbnail_url" bson:"image_thumbnail_url"` // NFT作品缩略图
+	Description       string `json:"description" bson:"description"`                 // NFT作品描述
+	ContractAddress   string `json:"contract_address" bson:"contract_address"`       // 合约地址
+	TokenId           string `json:"token_id" bson:"token_id"`                       // NFT token id
+	NumSales          int    `json:"num_sales" bson:"num_sales"`                     // NFT售卖次数
+	Owner             string `json:"owner" bson:"owner"`                             // NFT拥有者
+	OwnerImgURL       string `json:"owner_img_url" bson:"owner_img_url"`             // 拥有者头像
+	Creator           string `json:"creator" bson:"creator"`                         // NFT创造者
+	CreatorImgURL     string `json:"creator_img_url" bson:"creator_img_url"`         // 创造者头像
+	TokenMetadata     string `json:"token_metadata" bson:"token_metadata"`           // NFT元数据
+
+	Slug string `json:"slug" bson:"slug"` // 集合唯一标识符号
+
+	//Contract            Contract             `json:"contract" bson:"contract"`
+	//Collection          Collection           `json:"collection" bson:"collection"`
+	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownerships" bson:"assets_top_ownerships"`
+	Traits              []Trait              `json:"traits" bson:"traits"`
+
+	IsDelete    int8 `json:"is_delete" bson:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime int  `json:"refresh_time" bson:"refresh_time"` // 刷新时间
+}
+
+type Collection struct {
+	//ID              int64   `json:"id" bson:"id"`                               // 主键
+	Slug            string  `json:"slug" bson:"slug"`                           // 集合唯一标识符
+	UserAddress     string  `json:"user_address" bson:"user_address"`           // 集合拥有者
+	Name            string  `json:"name" bson:"name"`                           // 集合名称
+	BannerImageURL  string  `json:"banner_image_url" bson:"banner_image_url"`   // 集合背景图
+	Description     string  `json:"description" bson:"description"`             // 集合描述
+	ImageURL        string  `json:"image_url" bson:"image_url"`                 // 集合头像
+	LargeImageURL   string  `json:"large_image_url" bson:"large_image_url"`     // 头像大图
+	IsDelete        int8    `json:"is_delete" bson:"is_delete"`                 // 是否删除 1删除 0未删除 默认为0
+	CreateDate      string  `json:"create_date" bson:"create_date"`             // 集合创建时间
+	RefreshTime     int     `json:"refresh_time" bson:"refresh_time"`           // 刷新时间
+	NumOwners       int     `json:"num_owners" bson:"num_owners"`               // 集合中输入自己的NFT个数
+	TotalSupply     int     `json:"total_supply" bson:"total_supply"`           // 集合中NFT总数
+	TotalVolume     float64 `json:"total_volume" bson:"total_volume"`           // 交易量
+	OwnedAssetCount string  `json:"owned_asset_count" bson:"owned_asset_count"` // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
+}
+
+type Contract struct {
+	//ID           int64  `json:"id" bson:"id"`                       // 主键
+	Address      string `json:"address" bson:"address"`             // 合约地址
+	ContractType string `json:"contract_type" bson:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
+	ContractName string `json:"contract_name" bson:"contract_name"` // 合约名字
+	Symbol       string `json:"symbol" bson:"symbol"`               // 符号
+	SchemaName   string `json:"schema_name" bson:"schema_name"`     // 合约类型
+	TotalSupply  string `json:"total_supply" bson:"total_supply"`   // 总供应量
+	Description  string `json:"description" bson:"description"`     // 合约描述
+}
+
+type Trait struct {
+	//ID              int64  `json:"id" bson:"id"`                     // 主键
+	UserAddress     string `json:"user_address" bson:"user_address"` // 用户地址
+	ContractAddress string `json:"_" bson:"contract_address"`        // 合约地址
+	TokenId         string `json:"_" bson:"token_id"`                // token id
+	TraitType       string `json:"trait_type" bson:"trait_type"`     // 特征类型
+	Value           string `json:"value" bson:"value"`               // 特征值
+	DisplayType     string `json:"display_type" bson:"display_type"`
+	MaxValue        int    `json:"max_value" bson:"max_value"`
+	TraitCount      int    `json:"trait_count" bson:"trait_count"` // 数量
+	OrderBy         string `json:"order_by" bson:"order_by"`
+	IsDelete        int8   `json:"is_delete" bson:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime     int    `json:"refresh_time" bson:"refresh_time"` // 刷新时间
+}
+
+type AssetsTopOwnership struct {
+	//ID              int64  `json:"id" bson:"id"`                           // 主键
+	UserAddress     string `json:"user_address" bson:"user_address"`       // 用户地址
+	ContractAddress string `json:"_" bson:"contract_address"`              // 合约地址
+	TokenId         string `json:"_" bson:"token_id"`                      // token id
+	Owner           string `json:"owner" bson:"owner"`                     // 所有者地址
+	ProfileImgURL   string `json:"profile_img_url" bson:"profile_img_url"` // 所有者头像
+	Quantity        string `json:"quantity" bson:"quantity"`               // 数量
+	IsDelete        int8   `json:"is_delete" bson:"is_delete"`             // 是否删除 1删除 0未删除 默认为0
+	RefreshTime     int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
+}
+
 type OwnerAsset struct {
 	Assets []AutoAsset `json:"assets"`
 }

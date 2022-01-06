@@ -79,7 +79,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 }
 
 // getAssetByOwner get assets by owner
-func getAssetByOwner(user string) ([]*models.Asset, error) {
+func getAssetByOwner(user string) ([]map[string]interface{}, error) {
 	assets, err := models.FindAssetByOwner(user)
 	if err != nil {
 		logs.GetLogger().Error(err)
