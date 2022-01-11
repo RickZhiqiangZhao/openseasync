@@ -1,86 +1,19 @@
 package models
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/bson"
 	"openseasync/common/utils"
 	"openseasync/database"
 	"openseasync/logs"
 	"time"
 )
 
-type Asset struct {
-	ID                int64  `json:"id"`                  // 主键
-	UserAddress       string `json:"user_address"`        // 用户地址
-	Title             string `json:"title"`               // NFT作品标题
-	ImageURL          string `json:"image_url"`           // NFT作品图片
-	ImagePreviewURL   string `json:"image_preview_url"`   // NFT作品原图
-	ImageThumbnailURL string `json:"image_thumbnail_url"` // NFT作品缩略图
-	Description       string `json:"description"`         // NFT作品描述
-	ContractAddress   string `json:"contract_address"`    // 合约地址
-	TokenId           string `json:"token_id"`            // NFT token id
-	NumSales          int    `json:"num_sales"`           // NFT售卖次数
-	Owner             string `json:"owner"`               // NFT拥有者
-	OwnerImgURL       string `json:"owner_img_url"`       // 拥有者头像
-	Creator           string `json:"creator"`             // NFT创造者
-	CreatorImgURL     string `json:"creator_img_url"`     // 创造者头像
-	TokenMetadata     string `json:"token_metadata"`      // NFT元数据
-
-	Slug string `json:"slug"` // 集合唯一标识符号
-
-	Contract            Contract             `json:"contract"`
-	Collection          Collection           `json:"collection"`
-	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownership"`
-	Traits              []Trait              `json:"trait"`
-	IsDelete            int8                 `json:"is_delete"`    // 是否删除 1删除 0未删除 默认为0
-	RefreshTime         int                  `json:"refresh_time"` // 刷新时间
-}
-
-type Contract struct {
-	ID           int64  `json:"id"`            // 主键
-	Address      string `json:"address"`       // 合约地址
-	ContractType string `json:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
-	ContractName string `json:"contract_name"` // 合约名字
-	Symbol       string `json:"symbol"`        // 符号
-	SchemaName   string `json:"schema_name"`   // 合约类型
-	TotalSupply  string `json:"total_supply"`  // 总供应量
-	Description  string `json:"description"`   // 合约描述
-}
-
-type Trait struct {
-	ID              int64  `json:"id"`           // 主键
-	UserAddress     string `json:"user_address"` // 用户地址
-	ContractAddress string `json:"_"`            // 合约地址
-	TokenId         string `json:"_"`            // token id
-	TraitType       string `json:"trait_type"`   // 特征类型
-	Value           string `json:"value"`        // 特征值
-	DisplayType     string `json:"display_type"`
-	MaxValue        int    `json:"max_value"`
-	TraitCount      int    `json:"trait_count"` // 数量
-	OrderBy         string `json:"order_by"`
-	IsDelete        int8   `json:"is_delete"`    // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refresh_time"` // 刷新时间
-}
-
-type AssetsTopOwnership struct {
-	ID              int64  `json:"id"`              // 主键
-	UserAddress     string `json:"user_address"`    // 用户地址
-	ContractAddress string `json:"_"`               // 合约地址
-	TokenId         string `json:"_"`               // token id
-	Owner           string `json:"owner"`           // 所有者地址
-	ProfileImgURL   string `json:"profile_img_url"` // 所有者头像
-	Quantity        string `json:"quantity"`        // 数量
-	IsDelete        int8   `json:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refresh_time"`    // 刷新时间
-}
-
 // InsertOpenSeaAsset query Aseets through opensea API and insert
 func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
-	db := database.GetDB()
+	db := database.GetMongoClient()
 	refreshTime := int(time.Now().Unix())
-
-	// No blocking query opensea assets_top_ownerships
-	go queryAssetsTopOwnerShip(db, assets, refreshTime, user)
 
 	for _, v := range assets.Assets {
 		owner := user
@@ -88,86 +21,38 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			owner = v.Owner.Address
 		}
 
-		var asset = Asset{
-			UserAddress:       user,
-			Title:             v.Name,
-			ImageURL:          v.ImageURL,
-			ImagePreviewURL:   v.ImagePreviewURL,
-			ImageThumbnailURL: v.ImageThumbnailURL,
-			Description:       v.Description,
-			ContractAddress:   v.AssetContract.Address,
-			TokenId:           v.TokenID,
-			NumSales:          v.NumSales,
-			Owner:             owner,
-			OwnerImgURL:       v.Owner.ProfileImgURL,
-			Creator:           v.Creator.Address,
-			CreatorImgURL:     v.Creator.ProfileImgURL,
-			Slug:              v.Collection.Slug,
-			TokenMetadata:     v.TokenMetadata,
-			RefreshTime:       refreshTime,
-		}
-
-		var contract = Contract{
-			Address:      v.AssetContract.Address,
-			ContractName: v.AssetContract.Name,
-			ContractType: v.AssetContract.AssetContractType,
-			Symbol:       v.AssetContract.Symbol,
-			SchemaName:   v.AssetContract.SchemaName,
-			TotalSupply:  v.AssetContract.TotalSupply,
-			Description:  v.AssetContract.Description,
-		}
-
-		// gorm v1  batch insert is not supported
-		var tmp1 Asset
-		rows1 := db.Table("assets").
-			Where("user_address = ? AND contract_address = ? AND token_id = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID).
-			Find(&tmp1).RowsAffected
-		if rows1 == 0 {
-			// insert
-			if err := db.Table("assets").Create(&asset).Error; err != nil {
-				logs.GetLogger().Error(err)
-				return err
+		var (
+			asset = Asset{
+				UserAddress:       user,
+				Title:             v.Name,
+				ImageURL:          v.ImageURL,
+				ImagePreviewURL:   v.ImagePreviewURL,
+				ImageThumbnailURL: v.ImageThumbnailURL,
+				Description:       v.Description,
+				ContractAddress:   v.AssetContract.Address,
+				TokenId:           v.TokenID,
+				NumSales:          v.NumSales,
+				Owner:             owner,
+				OwnerImgURL:       v.Owner.ProfileImgURL,
+				Creator:           v.Creator.Address,
+				CreatorImgURL:     v.Creator.ProfileImgURL,
+				Slug:              v.Collection.Slug,
+				TokenMetadata:     v.TokenMetadata,
+				RefreshTime:       refreshTime,
 			}
-		} else {
-			// Refresh synchronization time
-			if err := db.Table("assets").
-				Where("user_address = ? AND contract_address = ? AND token_id = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID).
-				Update("refresh_time", refreshTime).Error; err != nil {
-				logs.GetLogger().Error(err)
-				return err
+			contract = Contract{
+				Address:      v.AssetContract.Address,
+				ContractName: v.AssetContract.Name,
+				ContractType: v.AssetContract.AssetContractType,
+				Symbol:       v.AssetContract.Symbol,
+				SchemaName:   v.AssetContract.SchemaName,
+				TotalSupply:  v.AssetContract.TotalSupply,
+				Description:  v.AssetContract.Description,
 			}
-			// update NFT without locked metadata
-			if v.TokenMetadata == "" {
-				if err := db.Table("assets").
-					Where("user_address = ? AND contract_address = ? AND token_id = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID).
-					Updates(map[string]interface{}{
-						"title":               v.Name,
-						"image_url":           v.ImageURL,
-						"image_preview_url":   v.ImagePreviewURL,
-						"image_thumbnail_url": v.ImageThumbnailURL,
-						"description":         v.Description,
-						"refresh_time":        refreshTime,
-					}).Error; err != nil {
-					logs.GetLogger().Error(err)
-					return err
-				}
-			}
+			traits             []Trait
+			assetTopOwnerships []AssetsTopOwnership
+		)
 
-		}
-
-		// insert contract
-		var tmp2 Contract
-		rows2 := db.Table("contracts").
-			Where("address = ?", v.AssetContract.Address).
-			Find(&tmp2).RowsAffected
-		if rows2 == 0 {
-			if err := db.Table("contracts").Create(&contract).Error; err != nil {
-				logs.GetLogger().Error(err)
-				return err
-			}
-		}
-
-		// update ro insert traits
 		for _, v1 := range v.Traits {
 			var trait = Trait{
 				UserAddress:     user,
@@ -181,127 +66,20 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				OrderBy:         v1.Order,
 				RefreshTime:     refreshTime,
 			}
-			var tmp3 Trait
-			rows3 := db.Table("traits").
-				Where("user_address = ? AND contract_address = ? AND token_id = ? AND trait_type = ? AND value = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID, v1.TraitType, v1.Value).
-				Find(&tmp3).RowsAffected
-			if rows3 == 0 {
-				if err := db.Table("traits").Create(&trait).Error; err != nil {
-					logs.GetLogger().Error(err)
-					return err
-				}
-			} else {
-				// Refresh synchronization time
-				if err := db.Table("traits").
-					Where("user_address = ? AND contract_address = ? AND token_id = ? AND trait_type = ? AND value = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID, v1.TraitType, v1.Value).
-					Update("refresh_time", refreshTime).Error; err != nil {
-					logs.GetLogger().Error(err)
-					return err
-				}
-			}
+			traits = append(traits, trait)
 		}
-	}
-
-	// Delete opensea deleted asset
-	if err := db.Table("assets").
-		Where("user_address = ? AND refresh_time < ? AND is_delete = 0", user, refreshTime).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return err
-	}
-	// Delete opensea deleted traits
-	if err := db.Table("traits").
-		Where("user_address = ? AND refresh_time < ? AND is_delete = 0", user, refreshTime).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return err
-	}
-
-	return nil
-
-}
-
-// FindAssetByOwner find assets by owner
-func FindAssetByOwner(user string) ([]*Asset, error) {
-	var assets []*Asset
-	db := database.GetDB()
-	if err := db.Table("assets").
-		Where("user_address = ? AND is_delete = 0", user).
-		Find(&assets).Error; err != nil {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	for _, v := range assets {
-		if err := db.Table("collections").
-			Where("user_address = ? AND slug = ?", user, v.Slug).
-			Find(&v.Collection).Error; err != nil && err != gorm.ErrRecordNotFound {
-			logs.GetLogger().Error(err)
-			return nil, err
+		asset.Traits = traits
+		if v.SellOrders != nil {
+			asset.SellOrders.CreateDate = v.SellOrders[0].CreatedDate
+			asset.SellOrders.ClosingDate = v.SellOrders[0].ClosingDate
+			asset.SellOrders.CurrentPrice = v.SellOrders[0].CurrentPrice
+			asset.SellOrders.PayTokenContract.Symbol = v.SellOrders[0].PaymentTokenContract.Symbol
+			asset.SellOrders.PayTokenContract.ImageURL = v.SellOrders[0].PaymentTokenContract.ImageURL
+			asset.SellOrders.PayTokenContract.EthPrice = v.SellOrders[0].PaymentTokenContract.EthPrice
+			asset.SellOrders.PayTokenContract.UsdPrice = v.SellOrders[0].PaymentTokenContract.UsdPrice
 		}
-		if err := db.Table("contracts").
-			Where("address = ?", v.ContractAddress).
-			Find(&v.Contract).Error; err != nil && err != gorm.ErrRecordNotFound {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err := db.Table("assets_top_ownerships").
-			Where("user_address = ? AND contract_address = ? AND token_id = ?", user, v.ContractAddress, v.TokenId).
-			Find(&v.AssetsTopOwnerships).Error; err != nil && err != gorm.ErrRecordNotFound {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err := db.Table("traits").
-			Where("user_address = ? AND contract_address = ? AND token_id = ?", user, v.ContractAddress, v.TokenId).
-			Find(&v.Traits).Error; err != nil && err != gorm.ErrRecordNotFound {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-	}
 
-	return assets, nil
-}
-
-// FindWorksBySlug find assets by collection
-func FindWorksBySlug(user, slug string) ([]*Asset, error) {
-	var assets []*Asset
-	db := database.GetDB()
-
-	if err := db.Table("assets").
-		Where("user_address = ? AND slug = ? AND is_delete = 0", user, slug).
-		Find(&assets).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	return assets, nil
-}
-
-// DeleteAssetByTokenID delete asset by tokenId
-func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
-	db := database.GetDB()
-	if err := db.Table("assets").
-		Where("user_address = ? AND contract_address = ? AND token_id = ?", user, contractAddress, tokenID).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return err
-	}
-	if err := db.Table("traits").
-		Where("user_address = ? AND contract_address = ? AND token_id = ?", user, contractAddress, tokenID).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return err
-	}
-	if err := db.Table("assets_top_ownerships").
-		Where("user_address = ? AND contract_address = ? AND token_id = ?", user, contractAddress, tokenID).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
-		logs.GetLogger().Error(err)
-		return err
-	}
-	return nil
-}
-
-func queryAssetsTopOwnerShip(db *gorm.DB, assets *OwnerAsset, refreshTime int, user string) error {
-	for _, v := range assets.Assets {
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
 		resp, err := utils.RequestOpenSeaSingleAsset(v.AssetContract.Address, v.TokenID)
 		if err != nil {
@@ -313,45 +91,248 @@ func queryAssetsTopOwnerShip(db *gorm.DB, assets *OwnerAsset, refreshTime int, u
 			logs.GetLogger().Error(err)
 			return err
 		}
-		for _, a := range autoAsset.TopOwnerships {
+
+		for _, v2 := range autoAsset.TopOwnerships {
 			var assetsTopOwnership = AssetsTopOwnership{
 				UserAddress:     user,
 				ContractAddress: v.AssetContract.Address,
 				TokenId:         v.TokenID,
-				Owner:           a.Owner.Address,
-				ProfileImgURL:   a.Owner.ProfileImgURL,
-				Quantity:        a.Quantity,
+				Owner:           v2.Owner.Address,
+				ProfileImgURL:   v2.Owner.ProfileImgURL,
+				Quantity:        v2.Quantity,
 				RefreshTime:     refreshTime,
 			}
+			assetTopOwnerships = append(assetTopOwnerships, assetsTopOwnership)
+		}
+		asset.AssetsTopOwnerships = assetTopOwnerships
 
-			var tmp4 AssetsTopOwnership
-			rows4 := db.Table("assets_top_ownerships").
-				Where("user_address = ? AND contract_address = ? AND token_id = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID).
-				Find(&tmp4).RowsAffected
-			if rows4 == 0 {
-				if err = db.Table("assets_top_ownerships").Create(&assetsTopOwnership).Error; err != nil {
+		count, err := db.Collection("assets").CountDocuments(
+			context.TODO(),
+			bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID,
+				"is_delete": 0})
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		if count == 0 {
+			if _, err = db.Collection("assets").InsertOne(context.TODO(), &asset); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+		} else {
+			var sellOrders bson.M
+			if v.SellOrders != nil {
+				sellOrders = bson.M{
+					"create_date":   v.SellOrders[0].CreatedDate,
+					"closing_date":  v.SellOrders[0].ClosingDate,
+					"current_price": v.SellOrders[0].CurrentPrice,
+					"pay_token_contract": bson.M{
+						"symbol":    v.SellOrders[0].PaymentTokenContract.Symbol,
+						"image_url": v.SellOrders[0].PaymentTokenContract.ImageURL,
+						"eth_price": v.SellOrders[0].PaymentTokenContract.EthPrice,
+						"usd_price": v.SellOrders[0].PaymentTokenContract.UsdPrice,
+					},
+				}
+			}
+			// update
+			if _, err = db.Collection("assets").UpdateOne(
+				context.TODO(),
+				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
+				bson.M{"$set": bson.M{"title": v.Name, "image_url": v.ImageURL, "image_preview_url": v.ImagePreviewURL,
+					"image_thumbnail_url": v.ImageThumbnailURL, "description": v.Description, "refresh_time": refreshTime,
+					"traits": traits, "assets_top_ownerships": assetTopOwnerships, "sell_orders": sellOrders}}); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+		}
+
+		// insert contract
+		count, err = db.Collection("contracts").
+			CountDocuments(context.TODO(), bson.M{"address": v.AssetContract.Address})
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		if count == 0 {
+			if _, err = db.Collection("contracts").InsertOne(context.TODO(), &contract); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+		}
+
+		// Insert transaction
+		time.Sleep(time.Second * 2)
+		// If the number of requests is too many, a 429 error code will be thrown
+		resp, err = utils.RequestOpenSeaEvent(v.AssetContract.Address, v.TokenID)
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		var event Event
+		if err = json.Unmarshal(resp, &event); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+
+		for _, v3 := range event.AssetEvents {
+			var itemActivity = ItemActivity{
+				Id:                  v3.ID,
+				UserAddress:         user,
+				ContractAddress:     v.AssetContract.Address,
+				TokenId:             v.TokenID,
+				BidAmount:           v3.BidAmount,
+				CreateDate:          v3.CreatedDate,
+				TotalPrice:          v3.TotalPrice,
+				Seller:              v3.Seller.Address,
+				SellerProfileImgURL: v3.Seller.ProfileImgURL,
+				Winner:              v3.WinnerAccount.Address,
+				WinnerProfileImgURL: v3.WinnerAccount.ProfileImgURL,
+				EventType:           v3.EventType,
+				Transaction:         v3.Transaction,
+			}
+			count, err := db.Collection("item_activitys").CountDocuments(
+				context.TODO(),
+				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "id": v3.ID,
+					"is_delete": 0})
+			if err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+			if count == 0 {
+				if _, err = db.Collection("item_activitys").InsertOne(context.TODO(), &itemActivity); err != nil {
 					logs.GetLogger().Error(err)
 					return err
 				}
 			} else {
-				// Refresh synchronization time
-				if err = db.Table("assets_top_ownerships").
-					Where("user_address = ? AND contract_address = ? AND token_id = ? AND is_delete = 0", user, v.AssetContract.Address, v.TokenID).
-					Update("refresh_time", refreshTime).Error; err != nil {
+				// update
+				if _, err = db.Collection("item_activitys").UpdateOne(
+					context.TODO(),
+					bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
+					bson.M{"$set": bson.M{
+						"bid_amount": v3.BidAmount, "create_date": v3.CreatedDate, "total_price": v3.TotalPrice,
+						"seller": v3.Seller.Address, "seller_profile_img_url": v3.Seller.ProfileImgURL, "event_type": v3.EventType,
+						"winner": v3.WinnerAccount.Address, "winner_profile_img_url": v3.WinnerAccount.ProfileImgURL,
+						"transaction": v3.Transaction}}); err != nil {
 					logs.GetLogger().Error(err)
 					return err
 				}
 			}
 		}
-
 	}
-	// Delete opensea deleted traits
-	if err := db.Table("assets_top_ownerships").
-		Where("user_address = ? AND refresh_time < ?", user, refreshTime).
-		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
+
+	// Delete opensea deleted asset
+	if _, err := db.Collection("assets").UpdateMany(
+		context.TODO(),
+		bson.M{"user_address": user, "refresh_time": bson.M{"$lt": refreshTime}, "is_delete": 0},
+		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
+	return nil
+}
 
+// FindAssetByOwner find assets by owner
+func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
+	var (
+		assets     []*Asset
+		assetsList []map[string]interface{}
+	)
+	db := database.GetMongoClient()
+	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &assets); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+
+	for _, v := range assets {
+		var (
+			collection    Collection
+			contract      Contract
+			itemActivitys []ItemActivity
+			result        map[string]interface{}
+		)
+		err = db.Collection("collections").FindOne(
+			context.TODO(), bson.M{"user_address": user, "slug": v.Slug}).Decode(&collection)
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
+		err = db.Collection("contracts").FindOne(
+			context.TODO(), bson.M{"address": v.ContractAddress}).Decode(&contract)
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
+		cursor, err := db.Collection("item_activitys").Find(
+			context.TODO(), bson.M{"user_address": user, "contract_address": v.ContractAddress, "token_id": v.TokenId, "is_delete": 0})
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+		if err = cursor.All(context.TODO(), &itemActivitys); err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
+		bytes, err := json.Marshal(v)
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+		if err = json.Unmarshal(bytes, &result); err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
+		result["contract"] = contract
+		result["collection"] = collection
+		result["item_activitys"] = itemActivitys
+		assetsList = append(assetsList, result)
+	}
+
+	return assetsList, nil
+}
+
+// FindWorksBySlug find assets by collection
+func FindWorksBySlug(user, slug string) ([]*Asset, error) {
+	var assets []*Asset
+	db := database.GetMongoClient()
+
+	cursor, err := db.Collection("assets").Find(
+		context.TODO(), bson.M{"user_address": user, "slug": slug, "is_delete": 0})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &assets); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return assets, nil
+}
+
+// DeleteAssetByTokenID delete asset by tokenId
+func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
+	db := database.GetMongoClient()
+	if _, err := db.Collection("assets").UpdateMany(
+		context.TODO(),
+		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
+		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	if _, err := db.Collection("item_activitys").UpdateMany(
+		context.TODO(),
+		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
+		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
 	return nil
 }

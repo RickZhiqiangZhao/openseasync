@@ -90,11 +90,13 @@ const (
 	OPENSEA_DEV_ASSETS_URL       = "https://testnets-api.opensea.io/assets"
 	OPENSEA_DEV_SINGLE_ASSET_URL = "https://testnets-api.opensea.io/asset"
 	OPENSEA_DEV_COLLECTION_URL   = "https://testnets-api.opensea.io/collections"
+	OPENSEA_DEV_EVENT_URL        = "https://testnets-api.opensea.io/events"
 
 	// prod
 	OPENSEA_PROD_ASSETS_URL       = "https://api.opensea.io/api/v1/assets"
 	OPENSEA_PROD_SINGLE_ASSET_URL = "https://api.opensea.io/api/v1/asset"
 	OPENSEA_PROD_COLLECTIONS_URL  = "https://api.opensea.io/api/v1/collections"
+	OPENSEA_PROD_EVENT_URL        = "https://api.opensea.io/events"
 
 	// OPENSEA API KEY
 	OPENSEA_API_KEY = "" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
