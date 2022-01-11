@@ -287,3 +287,33 @@ func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) 
 	}
 	return content, nil
 }
+
+func RequestOpenSeaEvent(contractAddress, tokenId string) ([]byte, error) {
+	openSeaEventURL := constants2.OPENSEA_DEV_EVENT_URL
+	if !config.GetConfig().Dev {
+		openSeaEventURL = constants2.OPENSEA_PROD_EVENT_URL
+	}
+	url := fmt.Sprintf("%s?asset_contract_address=%s&token_id=%s", openSeaEventURL, contractAddress, tokenId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		err = errors.New(string(content))
+		return nil, err
+	}
+	return content, nil
+}

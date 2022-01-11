@@ -1,18 +1,28 @@
 package database
 
 import (
+	"context"
+	"fmt"
+	"time"
+
+	"openseasync/config"
+	"openseasync/logs"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"openseasync/config"
-	"openseasync/logs"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Database struct {
 	*gorm.DB
 }
 
-var DB *gorm.DB
+var (
+	DB          *gorm.DB
+	mongoClient *mongo.Database
+)
 
 // Opening a database and save the reference to `Database` struct.
 func Init() *gorm.DB {
@@ -51,4 +61,21 @@ func SaveOneWithTransaction(data interface{}) error {
 		logs.GetLogger().Error(err)
 	}
 	return err
+}
+
+func InitMongo() *mongo.Client {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	oc := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority", config.GetConfig().Database.DbUsername, config.GetConfig().Database.DbPwd, config.GetConfig().Database.DbHost, config.GetConfig().Database.DbPort))
+	oc.SetMaxPoolSize(100)
+	client, err := mongo.Connect(ctx, oc)
+	if err != nil {
+		panic(err)
+	}
+	mongoClient = client.Database(config.GetConfig().Database.DbSchemaName)
+	return client
+}
+
+func GetMongoClient() *mongo.Database {
+	return mongoClient
 }
