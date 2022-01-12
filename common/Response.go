@@ -8,8 +8,16 @@ type BasicResponse struct {
 	Status   string      `json:"status"`
 	Code     string      `json:"code"`
 	Data     interface{} `json:"data,omitempty"`
+	MetaData interface{} `json:"metadata,omitempty"`
 	Message  string      `json:"message,omitempty"`
 	PageInfo *PageInfo   `json:"page_info,omitempty"`
+}
+
+type MetaData struct {
+	Page      int64 `json:"page"`
+	PageSize  int64 `json:"page_size"`
+	Total     int64 `json:"total"`
+	TotalPage int64 `json:"total_page"`
 }
 
 type PageInfo struct {
@@ -26,11 +34,12 @@ type MixedResponse struct {
 	} `json:"mix_data"`
 }
 
-func CreateSuccessResponse(_data interface{}) BasicResponse {
+func CreateSuccessResponse(_data interface{}, metadata interface{}) BasicResponse {
 	return BasicResponse{
-		Status: constants.HTTP_STATUS_SUCCESS,
-		Code:   constants.HTTP_CODE_200_OK,
-		Data:   _data,
+		Status:   constants.HTTP_STATUS_SUCCESS,
+		Code:     constants.HTTP_CODE_200_OK,
+		Data:     _data,
+		MetaData: metadata,
 	}
 }
 
