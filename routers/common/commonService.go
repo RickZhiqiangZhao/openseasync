@@ -79,33 +79,33 @@ func openSeaOwnerCollectionsSync(user string) error {
 }
 
 // getAssetByOwner get assets by owner
-func getAssetByOwner(user string) ([]*models.Asset, error) {
-	assets, err := models.FindAssetByOwner(user)
+func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetByOwner(user, nil, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return assets, nil
+	return result, nil
 }
 
 // getAssetBySlug get assets by owner
-func getAssetBySlug(user, slug string) ([]*models.Asset, error) {
-	assets, err := models.FindWorksBySlug(user, slug)
+func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetByOwner(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return assets, nil
+	return result, nil
 }
 
 // getCollectionsByOwner get collection by owner
-func getCollectionsByOwner(user string) ([]*models.Collection, error) {
-	collections, err := models.FindCollectionByOwner(user)
+func getCollectionsByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindCollectionByOwner(user, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return collections, nil
+	return result, nil
 }
 
 // deleteAssetByTokenID delete asset

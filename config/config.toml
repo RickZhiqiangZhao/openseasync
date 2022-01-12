@@ -4,7 +4,7 @@ dev = true
 [database]
 db_host="localhost"
 # db_host="192.168.199.23"
-db_port="3306"
+db_port="27017"
 db_schema_name="openseasync"
 db_username="root"
 # db_username="filswan"

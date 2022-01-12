@@ -13,9 +13,11 @@ type Asset struct {
 	ContractAddress   string `json:"contract_address" bson:"contract_address"`       // 合约地址
 	TokenId           string `json:"token_id" bson:"token_id"`                       // NFT token id
 	NumSales          int    `json:"num_sales" bson:"num_sales"`                     // NFT售卖次数
-	Owner             string `json:"owner" bson:"owner"`                             // NFT拥有者
+	Owner             string `json:"owner" bson:"owner"`                             // NFT拥有者地址
+	OwnerName         string `json:"owner_name"`                                     // NFT拥有者名字
 	OwnerImgURL       string `json:"owner_img_url" bson:"owner_img_url"`             // 拥有者头像
-	Creator           string `json:"creator" bson:"creator"`                         // NFT创造者
+	Creator           string `json:"creator" bson:"creator"`                         // NFT创造者地址
+	CreatorName       string `json:"creator_name"`                                   // NFT创造者名字
 	CreatorImgURL     string `json:"creator_img_url" bson:"creator_img_url"`         // 创造者头像
 	TokenMetadata     string `json:"token_metadata" bson:"token_metadata"`           // NFT元数据
 
@@ -68,6 +70,39 @@ type SellOrder struct {
 	CurrentPrice string `json:"current_price" bson:"current_price"` // 当前价格
 
 	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+}
+
+type Orders struct {
+	ContractAddress string `json:"contract_address" bson:"contract_address"` // 合约地址
+	TokenId         string `json:"token_id" bson:"token_id"`                 // NFT token id
+	CreateDate      string `json:"create_date" bson:"create_date"`           // 创建时间
+	ClosingDate     string `json:"closing_date" bson:"closing_date"`         // 结束时间
+	ExpirationTime  int    `json:"expiration_time" bson:"expiration_time"`   // 过期时间
+	ListingTime     int    `json:"listing_time" bson:"listing_time"`
+	OrderHash       string `json:"order_hash" bson:"order_hash"`       // 订单hash
+	CurrentPrice    string `json:"current_price" bson:"current_price"` // 当前价格
+	BasePrice       string `json:"base_price" bson:"base_price"`       // 基础价格
+	CurrentBounty   string `json:"current_bounty" bson:"current_bounty"`
+	PaymentToken    string `json:"payment_token" bson:"payment_token"` // 支付地址
+	Target          string `json:"target" bson:"target"`
+	Metadata        struct {
+		ID       string `json:"id" bson:"id"`
+		Address  string `json:"address" bson:"address"`
+		Quantity string `json:"quantity" bson:"quantity"`
+		Schema   string `json:"schema" bson:"schema"`
+	} `json:"metadata" bson:"metadata"`
+	Maker struct {
+		UserName      string `json:"username" bson:"username"`
+		ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+		Address       string `json:"address" bson:"address"`
+	} `json:"maker" bson:"maker"`
+	Taker struct {
+		UserName      string `json:"username" bson:"username"`
+		ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+		Address       string `json:"address" bson:"address"`
+	} `json:"taker" bson:"taker"`
+	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+	IsDelete         int8             `json:"is_delete" bson:"is_delete"`                   // 是否删除 1删除 0未删除 默认为0
 }
 
 type PayTokenContract struct {
@@ -357,6 +392,87 @@ type AutoAsset struct {
 		MarkedInvalid   bool   `json:"marked_invalid"`
 		PrefixedHash    string `json:"prefixed_hash"`
 	} `json:"sell_orders"`
+	Orders []struct {
+		CreatedDate       string `json:"created_date"`
+		ClosingDate       string `json:"closing_date"`
+		ClosingExtendable bool   `json:"closing_extendable"`
+		ExpirationTime    int    `json:"expiration_time"`
+		ListingTime       int    `json:"listing_time"`
+		OrderHash         string `json:"order_hash"`
+		Metadata          struct {
+			Asset struct {
+				ID       string `json:"id"`
+				Address  string `json:"address"`
+				Quantity string `json:"quantity"`
+			} `json:"asset"`
+			Schema string `json:"schema"`
+		} `json:"metadata"`
+		Exchange string `json:"exchange"`
+		Maker    struct {
+			User struct {
+				Username string `json:"username"`
+			} `json:"user"`
+			ProfileImgURL string `json:"profile_img_url"`
+			Address       string `json:"address"`
+			Config        string `json:"config"`
+		} `json:"maker"`
+		Taker struct {
+			User struct {
+				Username string `json:"username"`
+			} `json:"user"`
+			ProfileImgURL string `json:"profile_img_url"`
+			Address       string `json:"address"`
+			Config        string `json:"config"`
+		} `json:"taker"`
+		CurrentPrice     string `json:"current_price"`
+		CurrentBounty    string `json:"current_bounty"`
+		BountyMultiple   string `json:"bounty_multiple"`
+		MakerRelayerFee  string `json:"maker_relayer_fee"`
+		TakerRelayerFee  string `json:"taker_relayer_fee"`
+		MakerProtocolFee string `json:"maker_protocol_fee"`
+		TakerProtocolFee string `json:"taker_protocol_fee"`
+		MakerReferrerFee string `json:"maker_referrer_fee"`
+		FeeRecipient     struct {
+			User struct {
+				Username string `json:"username"`
+			} `json:"user"`
+			ProfileImgURL string `json:"profile_img_url"`
+			Address       string `json:"address"`
+			Config        string `json:"config"`
+		} `json:"fee_recipient"`
+		FeeMethod            int    `json:"fee_method"`
+		Side                 int    `json:"side"`
+		SaleKind             int    `json:"sale_kind"`
+		Target               string `json:"target"`
+		HowToCall            int    `json:"how_to_call"`
+		Calldata             string `json:"calldata"`
+		ReplacementPattern   string `json:"replacement_pattern"`
+		StaticTarget         string `json:"static_target"`
+		StaticExtradata      string `json:"static_extradata"`
+		PaymentToken         string `json:"payment_token"`
+		PaymentTokenContract struct {
+			ID       int    `json:"id"`
+			Symbol   string `json:"symbol"`
+			Address  string `json:"address"`
+			ImageURL string `json:"image_url"`
+			Name     string `json:"name"`
+			Decimals int    `json:"decimals"`
+			EthPrice string `json:"eth_price"`
+			UsdPrice string `json:"usd_price"`
+		} `json:"payment_token_contract"`
+		BasePrice       string `json:"base_price"`
+		Extra           string `json:"extra"`
+		Quantity        string `json:"quantity"`
+		Salt            string `json:"salt"`
+		V               int    `json:"v"`
+		R               string `json:"r"`
+		S               string `json:"s"`
+		ApprovedOnChain bool   `json:"approved_on_chain"`
+		Cancelled       bool   `json:"cancelled"`
+		Finalized       bool   `json:"finalized"`
+		MarkedInvalid   bool   `json:"marked_invalid"`
+		PrefixedHash    string `json:"prefixed_hash"`
+	} `json:"orders"`
 	Creator struct {
 		User struct {
 			Username string `json:"username"`

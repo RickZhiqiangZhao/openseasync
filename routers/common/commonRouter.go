@@ -8,6 +8,7 @@ import (
 	"openseasync/common/errorinfo"
 	"openseasync/logs"
 	"openseasync/models"
+	"strconv"
 )
 
 func HostManager(router *gin.RouterGroup) {
@@ -25,7 +26,7 @@ func HostManager(router *gin.RouterGroup) {
 
 func GetSwanMinerVersion(c *gin.Context) {
 	info := getSwanMinerHostInfo()
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(info))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(info, nil))
 }
 
 // sync opensea assets and collections
@@ -48,7 +49,7 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
@@ -63,7 +64,7 @@ func OpenSeaOwnerAssetsSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
@@ -78,53 +79,103 @@ func OpenSeaOwnerCollectionsSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 func GetAssetsByOwner(c *gin.Context) {
 	user := c.Param("user")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetByOwner(user)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt < 1 || pageSizeInt < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+
+	result, err := getAssetByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(assets))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func GetCollectionsByOwner(c *gin.Context) {
 	user := c.Param("user")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	collections, err := getCollectionsByOwner(user)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt < 1 || pageSizeInt < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getCollectionsByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(collections))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func GetAssetsBySlug(c *gin.Context) {
 	user := c.Param("user")
 	slug := c.Param("slug")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 && slug != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetBySlug(user, slug)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt < 1 || pageSizeInt < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getAssetBySlug(user, slug, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(assets))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func DeleteAssetByTokenID(c *gin.Context) {
@@ -142,7 +193,7 @@ func DeleteAssetByTokenID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 func DeleteCollectionBySlug(c *gin.Context) {
@@ -161,5 +212,5 @@ func DeleteCollectionBySlug(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }

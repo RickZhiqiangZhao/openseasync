@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"openseasync/database"
 	"openseasync/logs"
 	"time"
@@ -69,10 +70,23 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 }
 
 // FindCollectionByOwner find collections by owner
-func FindCollectionByOwner(user string) ([]*Collection, error) {
-	var collections []*Collection
+func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+	var (
+		collections []*Collection
+		result      = make(map[string]interface{})
+	)
 	db := database.GetMongoClient()
-	cursor, err := db.Collection("collections").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	totalPage := total / pageSize
+	if total%pageSize != 0 {
+		totalPage++
+	}
+	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
+	cursor, err := db.Collection("collections").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0}, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -81,7 +95,11 @@ func FindCollectionByOwner(user string) ([]*Collection, error) {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return collections, nil
+
+	result["data"] = collections
+	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+
+	return result, nil
 }
 
 // DeleteCollectionBySlug delete empty collection

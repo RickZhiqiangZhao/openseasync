@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
 	"openseasync/common/constants"
@@ -13,12 +14,10 @@ import (
 
 func main() {
 	// init database
-	db := database.Init()
+	db := database.InitMongo()
 	config.InitConfig("")
-
-
 	defer func() {
-		err := db.Close()
+		err := db.Disconnect(context.TODO())
 		if err != nil {
 			logs.GetLogger().Error(err)
 		}
