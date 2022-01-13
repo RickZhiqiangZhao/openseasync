@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
 	"openseasync/logs"
 	"time"
@@ -72,7 +72,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 // FindCollectionByOwner find collections by owner
 func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		collections []*Collection
+		collections []bson.M
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
@@ -85,8 +85,26 @@ func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interf
 	if total%pageSize != 0 {
 		totalPage++
 	}
-	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
-	cursor, err := db.Collection("collections").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0}, opts)
+
+	pipe := mongo.Pipeline{
+		{{"$match", bson.M{"user_address": user, "is_delete": 0}}},
+		{{"$skip", (page - 1) * pageSize}},
+		{{"$limit", pageSize}},
+		{{"$lookup", bson.M{
+			"from":     "users",
+			"let":      bson.M{"user_address": "$user_address"},
+			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$user_address", "$$user_address"}}}}},
+			"as":       "user_item",
+		}}},
+		{{
+			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
+		}},
+		{{
+			"$addFields", bson.M{"username": "$user_item.username", "user_img_url": "$user_item.user_img_url"},
+		}},
+		{{"$project", bson.M{"_id": 0, "update_time": 0}}},
+	}
+	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
