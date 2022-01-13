@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,16 +13,14 @@ import (
 	"time"
 )
 
+const ZeroAddress = "0x0000000000000000000000000000000000000000"
+
 // InsertOpenSeaAsset query Aseets through opensea API and insert
 func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 	db := database.GetMongoClient()
 	refreshTime := int(time.Now().Unix())
 
 	for _, v := range assets.Assets {
-		owner := user
-		if v.Owner.Address != "0x0000000000000000000000000000000000000000" {
-			owner = v.Owner.Address
-		}
 
 		var (
 			asset = Asset{
@@ -34,7 +33,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				ContractAddress:   v.AssetContract.Address,
 				TokenId:           v.TokenID,
 				NumSales:          v.NumSales,
-				Owner:             owner,
+				Owner:             v.Owner.Address,
 				OwnerName:         v.Owner.User.Username,
 				OwnerImgURL:       v.Owner.ProfileImgURL,
 				Creator:           v.Creator.Address,
@@ -153,6 +152,22 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			}
 		}
 
+		// insert user
+		var userModel = User{
+			UserAddress: user,
+			Username:    v.Owner.User.Username,
+			UserImgURL:  v.Owner.ProfileImgURL,
+		}
+		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
+			fmt.Println(v.Creator.ProfileImgURL)
+			userModel.Username = v.Creator.User.Username
+			userModel.UserImgURL = v.Creator.ProfileImgURL
+		}
+		if err := insertUsers(db, user, userModel); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+
 		// insert order
 		if err := insertOrders(db, v.AssetContract.Address, v.TokenID, autoAsset); err != nil {
 			logs.GetLogger().Error(err)
@@ -171,6 +186,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
+
 	}
 
 	// Delete opensea deleted asset
@@ -467,6 +483,32 @@ func insertOrders(db *mongo.Database, contractAddress, tokenId string, autoAsset
 			}
 		}
 
+	}
+	return nil
+}
+
+// insert users
+func insertUsers(db *mongo.Database, userAddress string, user User) error {
+	count, err := db.Collection("users").
+		CountDocuments(context.TODO(), bson.M{"user_address": userAddress})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	if count == 0 {
+		if _, err = db.Collection("users").InsertOne(context.TODO(), user); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+	} else {
+		// update
+		if _, err = db.Collection("users").UpdateOne(
+			context.TODO(),
+			bson.M{"user_address": userAddress},
+			bson.M{"$set": bson.M{"username": user.Username, "user_img_url": user.UserImgURL}}); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
 	}
 	return nil
 }

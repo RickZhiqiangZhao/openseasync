@@ -2,8 +2,13 @@ package models
 
 import "math/big"
 
+type User struct {
+	UserAddress string `json:"user_address" bson:"user_address"` // 用户地址
+	Username    string `json:"username" bson:"username"`         // 用户头像
+	UserImgURL  string `json:"user_img_url" bson:"user_img_url"` // 用户头像
+}
+
 type Asset struct {
-	//ID                int64  `json:"id" bson:"id"`                                   // 主键
 	UserAddress       string `json:"user_address" bson:"user_address"`               // 用户地址
 	Title             string `json:"title" bson:"title"`                             // NFT作品标题
 	ImageURL          string `json:"image_url" bson:"image_url"`                     // NFT作品图片
@@ -23,8 +28,6 @@ type Asset struct {
 
 	Slug string `json:"slug" bson:"slug"` // 集合唯一标识符号
 
-	//Contract            Contract             `json:"contract" bson:"contract"`
-	//Collection          Collection           `json:"collection" bson:"collection"`
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownerships" bson:"assets_top_ownerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
 
@@ -35,9 +38,8 @@ type Asset struct {
 }
 
 type Collection struct {
-	//ID              int64   `json:"id" bson:"id"`                               // 主键
-	Slug            string  `json:"slug" bson:"slug"`                           // 集合唯一标识符
 	UserAddress     string  `json:"user_address" bson:"user_address"`           // 集合拥有者
+	Slug            string  `json:"slug" bson:"slug"`                           // 集合唯一标识符
 	Name            string  `json:"name" bson:"name"`                           // 集合名称
 	BannerImageURL  string  `json:"banner_image_url" bson:"banner_image_url"`   // 集合背景图
 	Description     string  `json:"description" bson:"description"`             // 集合描述
@@ -54,7 +56,6 @@ type Collection struct {
 }
 
 type Contract struct {
-	//ID           int64  `json:"id" bson:"id"`                       // 主键
 	Address      string `json:"address" bson:"address"`             // 合约地址
 	ContractType string `json:"contract_type" bson:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
 	ContractName string `json:"contract_name" bson:"contract_name"` // 合约名字
