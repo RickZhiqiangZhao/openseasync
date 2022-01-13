@@ -16,7 +16,7 @@ func FindItemActivityByCollectionId(collectionId string, page, pageSize int64) (
 	)
 	db := database.GetMongoClient()
 
-	total, err := db.Collection("item_activitys").CountDocuments(context.TODO(), bson.M{"collectionId": collectionId, "is_delete": 0})
+	total, err := db.Collection("item_activitys").CountDocuments(context.TODO(), bson.M{"collectionId": collectionId, "isDelete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -41,7 +41,7 @@ func FindItemActivityByCollectionId(collectionId string, page, pageSize int64) (
 			{"sellerMetamaskId", 1},
 			{"sellerName", 1},
 		})
-	cursor, err := db.Collection("item_activitys").Find(context.TODO(), bson.M{"collectionId": collectionId, "is_delete": 0}, opts)
+	cursor, err := db.Collection("item_activitys").Find(context.TODO(), bson.M{"collectionId": collectionId, "isDelete": 0}, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err

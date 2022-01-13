@@ -27,10 +27,10 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		var (
 			asset = Asset{
 				UserMetamaskID:    user,
-				Title:             v.Name,
-				ImageURL:          v.ImageURL,
-				ImagePreviewURL:   v.ImagePreviewURL,
-				ImageThumbnailURL: v.ImageThumbnailURL,
+				Name:              v.Name,
+				CoverImageUrl:     v.ImageURL,
+				CoverPreviewURL:   v.ImagePreviewURL,
+				CoverThumbnailURL: v.ImageThumbnailURL,
 				Description:       v.Description,
 				ContractAddress:   v.AssetContract.Address,
 				TokenId:           v.TokenID,
@@ -116,8 +116,8 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		// insert assets
 		count, err := db.Collection("assets").CountDocuments(
 			context.TODO(),
-			bson.M{"userMetamaskId": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID,
-				"is_delete": 0})
+			bson.M{"userMetamaskId": user, "contractAddress": v.AssetContract.Address, "tokenId": v.TokenID,
+				"isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -128,27 +128,21 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				return err
 			}
 		} else {
-			var sellOrders bson.M
-			if v.SellOrders != nil {
-				sellOrders = bson.M{
-					"create_date":   v.SellOrders[0].CreatedDate,
-					"closing_date":  v.SellOrders[0].ClosingDate,
-					"current_price": v.SellOrders[0].CurrentPrice,
-					"pay_token_contract": bson.M{
-						"symbol":    v.SellOrders[0].PaymentTokenContract.Symbol,
-						"image_url": v.SellOrders[0].PaymentTokenContract.ImageURL,
-						"eth_price": v.SellOrders[0].PaymentTokenContract.EthPrice,
-						"usd_price": v.SellOrders[0].PaymentTokenContract.UsdPrice,
-					},
-				}
-			}
 			// update
+			assetByte, err := bson.Marshal(asset)
+			if err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+			var tmpAssetByte bson.M
+			if err := bson.Unmarshal(assetByte, &tmpAssetByte); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
 			if _, err = db.Collection("assets").UpdateOne(
 				context.TODO(),
-				bson.M{"userMetamaskId": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
-				bson.M{"$set": bson.M{"title": v.Name, "image_url": v.ImageURL, "image_preview_url": v.ImagePreviewURL,
-					"image_thumbnail_url": v.ImageThumbnailURL, "description": v.Description, "refresh_time": refreshTime,
-					"traits": traits, "assets_top_ownerships": assetTopOwnerships, "sell_orders": sellOrders}}); err != nil {
+				bson.M{"userMetamaskId": user, "contractAddress": v.AssetContract.Address, "tokenId": v.TokenID, "isDelete": 0},
+				bson.M{"$set": tmpAssetByte}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}
@@ -208,7 +202,7 @@ func FindAssetByOwner(user string, collectionId interface{}, page, pageSize int6
 	)
 	db := database.GetMongoClient()
 
-	condition := bson.M{"userMetamaskId": user, "is_delete": 0}
+	condition := bson.M{"userMetamaskId": user, "isDelete": 0}
 	if collectionId != nil {
 		condition["collectionId"] = collectionId
 	}
@@ -256,7 +250,7 @@ func FindAssetByOwner(user string, collectionId interface{}, page, pageSize int6
 		}
 
 		cursor, err := db.Collection("item_activitys").Find(
-			context.TODO(), bson.M{"userMetamaskId": user, "contract_address": v.ContractAddress, "token_id": v.TokenId, "is_delete": 0})
+			context.TODO(), bson.M{"userMetamaskId": user, "contractAddress": v.ContractAddress, "tokenId": v.TokenId, "isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return nil, err
@@ -267,7 +261,7 @@ func FindAssetByOwner(user string, collectionId interface{}, page, pageSize int6
 		}
 
 		cursor, err = db.Collection("orders").Find(
-			context.TODO(), bson.M{"contract_address": v.ContractAddress, "token_id": v.TokenId, "is_delete": 0})
+			context.TODO(), bson.M{"contractAddress": v.ContractAddress, "tokenId": v.TokenId, "isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return nil, err
@@ -306,8 +300,8 @@ func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	// delete assets
 	if _, err := db.Collection("assets").UpdateMany(
 		context.TODO(),
-		bson.M{"userMetamaskId": user, "contract_address": contractAddress, "token_id": tokenID},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "contractAddress": contractAddress, "tokenId": tokenID},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -315,8 +309,8 @@ func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	// delete item_activitys
 	if _, err := db.Collection("item_activitys").UpdateMany(
 		context.TODO(),
-		bson.M{"userMetamaskId": user, "contract_address": contractAddress, "token_id": tokenID},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "contractAddress": contractAddress, "tokenId": tokenID},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -324,8 +318,8 @@ func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	// delete orders
 	if _, err := db.Collection("orders").UpdateMany(
 		context.TODO(),
-		bson.M{"contract_address": contractAddress, "token_id": tokenID},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"contract_address": contractAddress, "tokenId": tokenID},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -353,8 +347,8 @@ func insertContract(db *mongo.Database, contractAddress string, contract *Contra
 func deleteAsset(db *mongo.Database, user string, refreshTime int) error {
 	if _, err := db.Collection("assets").UpdateMany(
 		context.TODO(),
-		bson.M{"userMetamaskId": user, "refresh_time": bson.M{"$lt": refreshTime}, "is_delete": 0},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "refreshTime": bson.M{"$lt": refreshTime}, "isDelete": 0},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -416,7 +410,7 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 
 		count, err := db.Collection("item_activitys").CountDocuments(
 			context.TODO(),
-			bson.M{"id": v.ID, "contract_address": contractAddress, "token_id": tokenId, "is_delete": 0})
+			bson.M{"id": v.ID, "contractAddress": contractAddress, "tokenId": tokenId, "isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -440,7 +434,7 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 			}
 			if _, err = db.Collection("item_activitys").UpdateOne(
 				context.TODO(),
-				bson.M{"contract_address": contractAddress, "token_id": tokenId, "is_delete": 0},
+				bson.M{"contractAddress": contractAddress, "tokenId": tokenId, "isDelete": 0},
 				bson.M{"$set": tmpItemActivity}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
@@ -482,7 +476,7 @@ func insertOrders(db *mongo.Database, contractAddress, tokenId string, autoAsset
 		orders.PayTokenContract.EthPrice = v.PaymentTokenContract.EthPrice
 		orders.PayTokenContract.UsdPrice = v.PaymentTokenContract.UsdPrice
 		count, err := db.Collection("orders").
-			CountDocuments(context.TODO(), bson.M{"order_hash": v.OrderHash})
+			CountDocuments(context.TODO(), bson.M{"orderHash": v.OrderHash})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -506,7 +500,7 @@ func insertOrders(db *mongo.Database, contractAddress, tokenId string, autoAsset
 
 			if _, err = db.Collection("assets").UpdateOne(
 				context.TODO(),
-				bson.M{"order_hash": v.OrderHash}, bson.M{"$set": tmpOrders}); err != nil {
+				bson.M{"orderHash": v.OrderHash}, bson.M{"$set": tmpOrders}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}

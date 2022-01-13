@@ -10,87 +10,86 @@ type User struct {
 }
 
 type Asset struct {
-	UserMetamaskID    string `json:"userMetamaskId" bson:"userMetamaskId"`           // 用户地址
-	Title             string `json:"title" bson:"title"`                             // NFT作品标题
-	ImageURL          string `json:"image_url" bson:"image_url"`                     // NFT作品图片
-	ImagePreviewURL   string `json:"image_preview_url" bson:"image_preview_url"`     // NFT作品原图
-	ImageThumbnailURL string `json:"image_thumbnail_url" bson:"image_thumbnail_url"` // NFT作品缩略图
-	Description       string `json:"description" bson:"description"`                 // NFT作品描述
-	ContractAddress   string `json:"contract_address" bson:"contract_address"`       // 合约地址
-	TokenId           string `json:"token_id" bson:"token_id"`                       // NFT token id
-	NumSales          int    `json:"num_sales" bson:"num_sales"`                     // NFT售卖次数
-	Owner             string `json:"owner" bson:"owner"`                             // NFT拥有者地址
-	OwnerName         string `json:"owner_name"`                                     // NFT拥有者名字
-	OwnerImgURL       string `json:"owner_img_url" bson:"owner_img_url"`             // 拥有者头像
-	Creator           string `json:"creator" bson:"creator"`                         // NFT创造者地址
-	CreatorName       string `json:"creator_name"`                                   // NFT创造者名字
-	CreatorImgURL     string `json:"creator_img_url" bson:"creator_img_url"`         // 创造者头像
-	TokenMetadata     string `json:"token_metadata" bson:"token_metadata"`           // NFT元数据
+	UserMetamaskID    string `json:"userMetamaskId" bson:"userMetamaskId"`       // 用户地址
+	Name              string `json:"name" bson:"name"`                           // NFT作品标题
+	CoverImageUrl     string `json:"coverImageUrl " bson:"coverImageUrl "`       // 封面图片
+	CoverPreviewURL   string `json:"coverPreviewURL" bson:"coverPreviewURL"`     // NFT作品原图
+	CoverThumbnailURL string `json:"coverThumbnailURL" bson:"coverThumbnailURL"` // NFT作品缩略图
+	Description       string `json:"description" bson:"description"`             // NFT作品描述
+	ContractAddress   string `json:"contractAddress" bson:"contractAddress"`     // 合约地址
+	TokenId           string `json:"tokenId" bson:"tokenId"`                     // NFT token id
+	NumSales          int    `json:"numSales" bson:"numSales"`                   // NFT售卖次数
+	Owner             string `json:"owner" bson:"owner"`                         // NFT拥有者地址
+	OwnerName         string `json:"ownerName"`                                  // NFT拥有者名字
+	OwnerImgURL       string `json:"ownerImgURL" bson:"ownerImgURL"`             // 拥有者头像
+	Creator           string `json:"creator" bson:"creator"`                     // NFT创造者地址
+	CreatorName       string `json:"creator_name"`                               // NFT创造者名字
+	CreatorImgURL     string `json:"creatorImgURL" bson:"creatorImgURL"`         // 创造者头像
+	TokenMetadata     string `json:"tokenMetadata" bson:"tokenMetadata"`         // NFT元数据
 
 	CollectionID string `json:"collectionId" bson:"collectionId"` // 集合唯一标识符号
 
-	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownerships" bson:"assets_top_ownerships"`
+	AssetsTopOwnerships []AssetsTopOwnership `json:"assetsTopOwnerships" bson:"assetsTopOwnerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
 
-	SellOrders SellOrder `json:"sell_orders" bson:"sell_orders"`
+	SellOrders SellOrder `json:"sellOrders" bson:"sellOrders"`
 
-	IsDelete    int8 `json:"is_delete" bson:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime int  `json:"refresh_time" bson:"refresh_time"` // 刷新时间
+	IsDelete    int8 `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime int  `json:"refreshTime" bson:"refreshTime"` // 刷新时间
 }
 
 type Collection struct {
-	ID             string `json:"id" bson:"id"`                             // 集合ID
-	UserMetamaskID string `json:"userMetamaskId" bson:"userMetamaskId"`     // 集合拥有者
-	CollectionName string `json:"collectionName" bson:"collectionName"`     // 集合名称
-	BannerImageURL string `json:"banner_image_url" bson:"banner_image_url"` // 集合背景图
-	Description    string `json:"description" bson:"description"`           // 集合描述
-	ImageURL       string `json:"image_url" bson:"image_url"`               // 集合头像
-	AvatarUrl      string `json:"avatarUrl" bson:"avatarUrl"`
-	CoverImageUrl  string `json:"coverImageUrl " bson:"coverImageUrl "`
-	LargeImageURL  string `json:"large_image_url" bson:"large_image_url"` // 头像大图
-	IsDelete       int8   `json:"is_delete" bson:"is_delete"`             // 是否删除 1删除 0未删除 默认为0
-	CreateDate     string `json:"create_date" bson:"create_date"`         // 集合创建时间
-	RefreshTime    int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
+	ID                 string `json:"id" bson:"id"`                         // 集合ID
+	UserMetamaskID     string `json:"userMetamaskId" bson:"userMetamaskId"` // 集合拥有者
+	CollectionName     string `json:"collectionName" bson:"collectionName"` // 集合名称
+	BannerImageURL     string `json:"bannerImageURL" bson:"bannerImageURL"` // 集合背景图
+	Description        string `json:"description" bson:"description"`       // 集合描述
+	AvatarUrl          string `json:"avatarUrl" bson:"avatarUrl"`
+	CoverImageUrl      string `json:"coverImageUrl " bson:"coverImageUrl "`         // 封面图片
+	CoverLargeImageURL string `json:"coverLargeImageURL" bson:"coverLargeImageURL"` // 头像大图
+	IsDelete           int8   `json:"isDelete" bson:"isDelete"`                     // 是否删除 1删除 0未删除 默认为0
+	CreateDate         string `json:"createDate" bson:"createDate"`                 // 集合创建时间
+	RefreshTime        int    `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	//NumOwners      int     `json:"num_owners" bson:"num_owners"`             // 集合中属于自己的NFT个数
-	ItemsCount   int     `json:"itemsCount" bson:"itemsCount"`     // 集合中NFT总数
-	TotalVolume  float64 `json:"total_volume" bson:"total_volume"` // 交易量
-	FloorPrice   float64 `json:"floor_price"`                      // 最低价格
-	HighestPrice float64 `json:"highestPrice"`                     // 最高价格
-	OwnersCount  int     `json:"ownersCount" bson:"ownersCount"`   // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
+	ItemsCount   int     `json:"itemsCount" bson:"itemsCount"`   // 集合中NFT总数
+	TotalVolume  float64 `json:"totalVolume" bson:"totalVolume"` // 交易量
+	FloorPrice   float64 `json:"floorPrice"`                     // 最低价格
+	HighestPrice float64 `json:"highestPrice"`                   // 最高价格
+	OwnersCount  int     `json:"ownersCount" bson:"ownersCount"` // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
 	LikesCount   int     `json:"likesCount" bson:"likesCount"`
 	ViewsCount   int     `json:"viewsCount" bson:"viewsCount"`
 }
 
 type Contract struct {
-	Address      string `json:"address" bson:"address"`             // 合约地址
-	ContractType string `json:"contract_type" bson:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
-	ContractName string `json:"contract_name" bson:"contract_name"` // 合约名字
-	Symbol       string `json:"symbol" bson:"symbol"`               // 符号
-	SchemaName   string `json:"schema_name" bson:"schema_name"`     // 合约类型
-	TotalSupply  string `json:"total_supply" bson:"total_supply"`   // 总供应量
-	Description  string `json:"description" bson:"description"`     // 合约描述
+	Address      string `json:"address" bson:"address"`           // 合约地址
+	ContractType string `json:"contractType" bson:"contractType"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
+	ContractName string `json:"contractName" bson:"contractName"` // 合约名字
+	Symbol       string `json:"symbol" bson:"symbol"`             // 符号
+	SchemaName   string `json:"schemaName" bson:"schemaName"`     // 合约类型
+	TotalSupply  string `json:"totalSupply" bson:"totalSupply"`   // 总供应量
+	Description  string `json:"description" bson:"description"`   // 合约描述
 }
 
 type SellOrder struct {
-	CreateDate   string `json:"create_date" bson:"create_date"`     // 创建时间
-	ClosingDate  string `json:"closing_date" bson:"closing_date"`   // 结束时间
-	CurrentPrice string `json:"current_price" bson:"current_price"` // 当前价格
+	CreateDate   string `json:"createDate" bson:"createDate"`     // 创建时间
+	ClosingDate  string `json:"closingDate" bson:"closingDate"`   // 结束时间
+	CurrentPrice string `json:"currentPrice" bson:"currentPrice"` // 当前价格
 
-	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+	PayTokenContract PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
 }
 
 type Orders struct {
-	ContractAddress string `json:"contract_address" bson:"contract_address"` // 合约地址
-	TokenId         string `json:"token_id" bson:"token_id"`                 // NFT token id
-	CreateDate      string `json:"create_date" bson:"create_date"`           // 创建时间
-	ClosingDate     string `json:"closing_date" bson:"closing_date"`         // 结束时间
-	ExpirationTime  int    `json:"expiration_time" bson:"expiration_time"`   // 过期时间
-	ListingTime     int    `json:"listing_time" bson:"listing_time"`
-	OrderHash       string `json:"order_hash" bson:"order_hash"`       // 订单hash
-	CurrentPrice    string `json:"current_price" bson:"current_price"` // 当前价格
-	BasePrice       string `json:"base_price" bson:"base_price"`       // 基础价格
-	CurrentBounty   string `json:"current_bounty" bson:"current_bounty"`
-	PaymentToken    string `json:"payment_token" bson:"payment_token"` // 支付地址
+	ContractAddress string `json:"contractAddress" bson:"contractAddress"` // 合约地址
+	TokenId         string `json:"tokenId" bson:"tokenId"`                 // NFT token id
+	CreateDate      string `json:"createDate" bson:"createDate"`           // 创建时间
+	ClosingDate     string `json:"closingDate" bson:"closingDate"`         // 结束时间
+	ExpirationTime  int    `json:"expirationTime" bson:"expirationTime"`   // 过期时间
+	ListingTime     int    `json:"listingTime" bson:"listingTime"`
+	OrderHash       string `json:"orderHash" bson:"orderHash"`       // 订单hash
+	CurrentPrice    string `json:"currentPrice" bson:"currentPrice"` // 当前价格
+	BasePrice       string `json:"basePrice" bson:"basePrice"`       // 基础价格
+	CurrentBounty   string `json:"currentBounty" bson:"currentBounty"`
+	PaymentToken    string `json:"paymentToken" bson:"paymentToken"` // 支付地址
 	Target          string `json:"target" bson:"target"`
 	Metadata        struct {
 		ID       string `json:"id" bson:"id"`
@@ -100,50 +99,50 @@ type Orders struct {
 	} `json:"metadata" bson:"metadata"`
 	Maker struct {
 		UserName      string `json:"username" bson:"username"`
-		ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+		ProfileImgURL string `json:"profileImgURL" bson:"profileImgURL"`
 		Address       string `json:"address" bson:"address"`
 	} `json:"maker" bson:"maker"`
 	Taker struct {
 		UserName      string `json:"username" bson:"username"`
-		ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+		ProfileImgURL string `json:"profileImgUrl" bson:"profileImgUrl"`
 		Address       string `json:"address" bson:"address"`
 	} `json:"taker" bson:"taker"`
-	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
-	IsDelete         int8             `json:"is_delete" bson:"is_delete"`                   // 是否删除 1删除 0未删除 默认为0
+	PayTokenContract PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
+	IsDelete         int8             `json:"isDelete" bson:"isDelete"`                 // 是否删除 1删除 0未删除 默认为0
 }
 
 type PayTokenContract struct {
 	Symbol   string `json:"symbol" bson:"symbol"`
-	ImageURL string `json:"image_url" bson:"image_url"`
-	EthPrice string `json:"eth_price" bson:"eth_price"`
-	UsdPrice string `json:"usd_price" bson:"usd_price"`
+	ImageURL string `json:"imageURL" bson:"imageURL"`
+	EthPrice string `json:"ethPrice" bson:"ethPrice"`
+	UsdPrice string `json:"usdPrice" bson:"usdPrice"`
 }
 
 type Trait struct {
 	//ID              int64  `json:"id" bson:"id"`                     // 主键
 	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
-	ContractAddress string `json:"_" bson:"contract_address"`            // 合约地址
+	ContractAddress string `json:"_" bson:"contractAddress"`             // 合约地址
 	TokenId         string `json:"_" bson:"token_id"`                    // token id
-	TraitType       string `json:"trait_type" bson:"trait_type"`         // 特征类型
+	TraitType       string `json:"traitType" bson:"traitType"`           // 特征类型
 	Value           string `json:"value" bson:"value"`                   // 特征值
-	DisplayType     string `json:"display_type" bson:"display_type"`
-	MaxValue        int    `json:"max_value" bson:"max_value"`
-	TraitCount      int    `json:"trait_count" bson:"trait_count"` // 数量
-	OrderBy         string `json:"order_by" bson:"order_by"`
-	IsDelete        int8   `json:"is_delete" bson:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refresh_time" bson:"refresh_time"` // 刷新时间
+	DisplayType     string `json:"displayType" bson:"displayType"`
+	MaxValue        int    `json:"maxValue" bson:"maxValue"`
+	TraitCount      int    `json:"traitCount" bson:"traitCount"` // 数量
+	OrderBy         string `json:"orderBy" bson:"orderBy"`
+	IsDelete        int8   `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime     int    `json:"refreshTime" bson:"refreshTime"` // 刷新时间
 }
 
 type AssetsTopOwnership struct {
 	//ID              int64  `json:"id" bson:"id"`                           // 主键
-	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"`   // 用户地址
-	ContractAddress string `json:"_" bson:"contract_address"`              // 合约地址
-	TokenId         string `json:"_" bson:"token_id"`                      // token id
-	Owner           string `json:"owner" bson:"owner"`                     // 所有者地址
-	ProfileImgURL   string `json:"profile_img_url" bson:"profile_img_url"` // 所有者头像
-	Quantity        string `json:"quantity" bson:"quantity"`               // 数量
-	IsDelete        int8   `json:"is_delete" bson:"is_delete"`             // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
+	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
+	ContractAddress string `json:"_" bson:"contractAddress"`             // 合约地址
+	TokenId         string `json:"_" bson:"token_id"`                    // token id
+	Owner           string `json:"owner" bson:"owner"`                   // 所有者地址
+	ProfileImgURL   string `json:"profileImgURL" bson:"profileImgURL"`   // 所有者头像
+	Quantity        string `json:"quantity" bson:"quantity"`             // 数量
+	IsDelete        int8   `json:"isDelete" bson:"isDelete"`             // 是否删除 1删除 0未删除 默认为0
+	RefreshTime     int    `json:"refreshTime" bson:"refreshTime"`       // 刷新时间
 }
 
 type ItemActivity struct {
@@ -152,24 +151,24 @@ type ItemActivity struct {
 	CollectibleName  string           `json:"collectibleName" bson:"collectibleName"` // NFT 名字
 	CollectionId     string           `json:"collectionId" bson:"collectionId"`       // 集合ID
 	CollectionName   string           `json:"collectionName" bson:"collectionName"`   // 集合名
-	ContractAddress  string           `json:"contract_address" bson:"contract_address"`
-	TokenId          string           `json:"token_id" bson:"token_id"`
-	BidAmount        string           `json:"bid_amount" bson:"bid_amount"` // 投标金额
-	CreateDate       string           `json:"create_date" bson:"create_date"`
-	Price            string           `json:"price" bson:"price"`                           // 成交价格ETH
-	PriceInUsd       string           `json:"priceInUsd " bson:"priceInUsd "`               // 成交价格USD
-	SellerId         int              `json:"sellerId" bson:"sellerId"`                     // 售卖者ID
-	SellerMetamaskId string           `json:"sellerMetamaskId" bson:"sellerMetamaskId"`     // 售卖者地址
-	SellerName       string           `json:"sellerName" bson:"sellerName"`                 // 售卖者名字
-	SellerImgURL     string           `json:"sellerImgURL" bson:"sellerImgURL"`             // 售卖者头像
-	BuyerId          int              `json:"buyerId" bson:"buyerId"`                       // 购买者ID
-	BuyerMetamaskId  string           `json:"buyerMetamaskId" bson:"buyerMetamaskId"`       // 购买者地址
-	BuyerName        string           `json:"buyerName" bson:"buyerName"`                   // 购买者名字
-	BuyerImgURL      string           `json:"buyerImgURL" bson:"buyerImgURL"`               // 购买者头像
-	Quantity         string           `json:"quantity" bson:"quantity"`                     // 数量
-	IsDelete         int8             `json:"is_delete" bson:"is_delete"`                   // 是否删除 1删除 0未删除 默认为0
-	TradeType        string           `json:"tradeType " bson:"tradeType"`                  // 事件类型
-	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+	ContractAddress  string           `json:"contractAddress" bson:"contractAddress"`
+	TokenId          string           `json:"tokenId" bson:"tokenId"`
+	BidAmount        string           `json:"bidAmount" bson:"bidAmount"` // 投标金额
+	CreateDate       string           `json:"createDate" bson:"createDate"`
+	Price            string           `json:"price" bson:"price"`                       // 成交价格ETH
+	PriceInUsd       string           `json:"priceInUsd " bson:"priceInUsd "`           // 成交价格USD
+	SellerId         int              `json:"sellerId" bson:"sellerId"`                 // 售卖者ID
+	SellerMetamaskId string           `json:"sellerMetamaskId" bson:"sellerMetamaskId"` // 售卖者地址
+	SellerName       string           `json:"sellerName" bson:"sellerName"`             // 售卖者名字
+	SellerImgURL     string           `json:"sellerImgURL" bson:"sellerImgURL"`         // 售卖者头像
+	BuyerId          int              `json:"buyerId" bson:"buyerId"`                   // 购买者ID
+	BuyerMetamaskId  string           `json:"buyerMetamaskId" bson:"buyerMetamaskId"`   // 购买者地址
+	BuyerName        string           `json:"buyerName" bson:"buyerName"`               // 购买者名字
+	BuyerImgURL      string           `json:"buyerImgURL" bson:"buyerImgURL"`           // 购买者头像
+	Quantity         string           `json:"quantity" bson:"quantity"`                 // 数量
+	IsDelete         int8             `json:"isDelete" bson:"isDelete"`                 // 是否删除 1删除 0未删除 默认为0
+	TradeType        string           `json:"tradeType " bson:"tradeType"`              // 事件类型
+	PayTokenContract PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
 	Transaction      struct {
 		BlockHash   string `json:"block_hash" bson:"block_hash"`
 		BlockNumber string `json:"block_number" bson:"block_number"`

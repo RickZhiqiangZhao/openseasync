@@ -19,22 +19,22 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 	refreshTime := int(time.Now().Unix())
 	for _, v := range collections.Collections {
 		var collection = Collection{
-			ID:             v.Slug,
-			UserMetamaskID: user,
-			CollectionName: v.Name,
-			Description:    v.Description,
-			BannerImageURL: v.BannerImageURL,
-			ImageURL:       v.ImageURL,
-			LargeImageURL:  v.LargeImageURL,
-			CreateDate:     v.CreatedDate,
-			RefreshTime:    refreshTime,
-			OwnersCount:    v.Stats.NumOwners,
-			ItemsCount:     int(v.Stats.TotalSupply),
-			TotalVolume:    v.Stats.TotalVolume,
-			FloorPrice:     v.Stats.FloorPrice,
+			ID:                 v.Slug,
+			UserMetamaskID:     user,
+			CollectionName:     v.Name,
+			Description:        v.Description,
+			BannerImageURL:     v.BannerImageURL,
+			CoverImageUrl:      v.ImageURL,
+			CoverLargeImageURL: v.LargeImageURL,
+			CreateDate:         v.CreatedDate,
+			RefreshTime:        refreshTime,
+			OwnersCount:        v.Stats.NumOwners,
+			ItemsCount:         int(v.Stats.TotalSupply),
+			TotalVolume:        v.Stats.TotalVolume,
+			FloorPrice:         v.Stats.FloorPrice,
 		}
 		count, err := db.Collection("collections").
-			CountDocuments(context.TODO(), bson.M{"userMetamaskId": user, "slug": v.Slug, "is_delete": 0})
+			CountDocuments(context.TODO(), bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -58,7 +58,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			}
 			if _, err = db.Collection("collections").UpdateOne(
 				context.TODO(),
-				bson.M{"userMetamaskId": user, "slug": v.Slug, "is_delete": 0},
+				bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0},
 				bson.M{"$set": tmpCollection}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
@@ -68,8 +68,8 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 
 	if _, err := db.Collection("collections").UpdateMany(
 		context.TODO(),
-		bson.M{"userMetamaskId": user, "refresh_time": bson.M{"$lt": refreshTime}, "is_delete": 0},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "refreshTime": bson.M{"$lt": refreshTime}, "isDelete": 0},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -77,14 +77,14 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 
 }
 
-// FindCollectionByOwner find collections by owner
+// FindCollectionByUserMetamaskID find collections by usermetamaskid
 func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections []bson.M
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": usermetamaskid, "is_delete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -95,7 +95,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 	}
 
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"userMetamaskId": usermetamaskid, "is_delete": 0}}},
+		{{"$match", bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
@@ -140,7 +140,7 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "is_delete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "isDelete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -151,7 +151,7 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 	}
 	fmt.Println(total)
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"id": collectionId, "is_delete": 0}}},
+		{{"$match", bson.M{"id": collectionId, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
@@ -204,8 +204,8 @@ func DeleteCollectionBySlug(user, slug string) error {
 
 	if _, err := db.Collection("collections").UpdateMany(
 		context.TODO(),
-		bson.M{"userMetamaskId": user, "slug": slug, "is_delete": 0},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "id": slug, "isDelete": 0},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
