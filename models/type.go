@@ -3,13 +3,14 @@ package models
 import "math/big"
 
 type User struct {
-	UserAddress string `json:"user_address" bson:"user_address"` // 用户地址
-	Username    string `json:"username" bson:"username"`         // 用户头像
-	UserImgURL  string `json:"user_img_url" bson:"user_img_url"` // 用户头像
+	Id             int    `json:"id" bson:"id"`                         // 用户 ID
+	UserMetamaskID string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
+	Username       string `json:"userName" bson:"userName"`             // 用户头像
+	UserImgURL     string `json:"userImgURL" bson:"userImgURL"`         // 用户头像
 }
 
 type Asset struct {
-	UserAddress       string `json:"user_address" bson:"user_address"`               // 用户地址
+	UserMetamaskID    string `json:"userMetamaskId" bson:"userMetamaskId"`           // 用户地址
 	Title             string `json:"title" bson:"title"`                             // NFT作品标题
 	ImageURL          string `json:"image_url" bson:"image_url"`                     // NFT作品图片
 	ImagePreviewURL   string `json:"image_preview_url" bson:"image_preview_url"`     // NFT作品原图
@@ -26,7 +27,7 @@ type Asset struct {
 	CreatorImgURL     string `json:"creator_img_url" bson:"creator_img_url"`         // 创造者头像
 	TokenMetadata     string `json:"token_metadata" bson:"token_metadata"`           // NFT元数据
 
-	Slug string `json:"slug" bson:"slug"` // 集合唯一标识符号
+	CollectionID string `json:"collectionId" bson:"collectionId"` // 集合唯一标识符号
 
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownerships" bson:"assets_top_ownerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
@@ -38,21 +39,26 @@ type Asset struct {
 }
 
 type Collection struct {
-	UserAddress     string  `json:"user_address" bson:"user_address"`           // 集合拥有者
-	Slug            string  `json:"slug" bson:"slug"`                           // 集合唯一标识符
-	Name            string  `json:"name" bson:"name"`                           // 集合名称
-	BannerImageURL  string  `json:"banner_image_url" bson:"banner_image_url"`   // 集合背景图
-	Description     string  `json:"description" bson:"description"`             // 集合描述
-	ImageURL        string  `json:"image_url" bson:"image_url"`                 // 集合头像
-	LargeImageURL   string  `json:"large_image_url" bson:"large_image_url"`     // 头像大图
-	IsDelete        int8    `json:"is_delete" bson:"is_delete"`                 // 是否删除 1删除 0未删除 默认为0
-	CreateDate      string  `json:"create_date" bson:"create_date"`             // 集合创建时间
-	RefreshTime     int     `json:"refresh_time" bson:"refresh_time"`           // 刷新时间
-	NumOwners       int     `json:"num_owners" bson:"num_owners"`               // 集合中输入自己的NFT个数
-	TotalSupply     int     `json:"total_supply" bson:"total_supply"`           // 集合中NFT总数
-	TotalVolume     float64 `json:"total_volume" bson:"total_volume"`           // 交易量
-	FloorPrice      float64 `json:"floor_price"`                                // 最低价格
-	OwnedAssetCount string  `json:"owned_asset_count" bson:"owned_asset_count"` // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
+	ID             string `json:"id" bson:"id"`                             // 集合ID
+	UserMetamaskID string `json:"userMetamaskId" bson:"userMetamaskId"`     // 集合拥有者
+	CollectionName string `json:"collectionName" bson:"collectionName"`     // 集合名称
+	BannerImageURL string `json:"banner_image_url" bson:"banner_image_url"` // 集合背景图
+	Description    string `json:"description" bson:"description"`           // 集合描述
+	ImageURL       string `json:"image_url" bson:"image_url"`               // 集合头像
+	AvatarUrl      string `json:"avatarUrl" bson:"avatarUrl"`
+	CoverImageUrl  string `json:"coverImageUrl " bson:"coverImageUrl "`
+	LargeImageURL  string `json:"large_image_url" bson:"large_image_url"` // 头像大图
+	IsDelete       int8   `json:"is_delete" bson:"is_delete"`             // 是否删除 1删除 0未删除 默认为0
+	CreateDate     string `json:"create_date" bson:"create_date"`         // 集合创建时间
+	RefreshTime    int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
+	//NumOwners      int     `json:"num_owners" bson:"num_owners"`             // 集合中属于自己的NFT个数
+	ItemsCount   int     `json:"itemsCount" bson:"itemsCount"`     // 集合中NFT总数
+	TotalVolume  float64 `json:"total_volume" bson:"total_volume"` // 交易量
+	FloorPrice   float64 `json:"floor_price"`                      // 最低价格
+	HighestPrice float64 `json:"highestPrice"`                     // 最高价格
+	OwnersCount  int     `json:"ownersCount" bson:"ownersCount"`   // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
+	LikesCount   int     `json:"likesCount" bson:"likesCount"`
+	ViewsCount   int     `json:"viewsCount" bson:"viewsCount"`
 }
 
 type Contract struct {
@@ -115,11 +121,11 @@ type PayTokenContract struct {
 
 type Trait struct {
 	//ID              int64  `json:"id" bson:"id"`                     // 主键
-	UserAddress     string `json:"user_address" bson:"user_address"` // 用户地址
-	ContractAddress string `json:"_" bson:"contract_address"`        // 合约地址
-	TokenId         string `json:"_" bson:"token_id"`                // token id
-	TraitType       string `json:"trait_type" bson:"trait_type"`     // 特征类型
-	Value           string `json:"value" bson:"value"`               // 特征值
+	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
+	ContractAddress string `json:"_" bson:"contract_address"`            // 合约地址
+	TokenId         string `json:"_" bson:"token_id"`                    // token id
+	TraitType       string `json:"trait_type" bson:"trait_type"`         // 特征类型
+	Value           string `json:"value" bson:"value"`                   // 特征值
 	DisplayType     string `json:"display_type" bson:"display_type"`
 	MaxValue        int    `json:"max_value" bson:"max_value"`
 	TraitCount      int    `json:"trait_count" bson:"trait_count"` // 数量
@@ -130,7 +136,7 @@ type Trait struct {
 
 type AssetsTopOwnership struct {
 	//ID              int64  `json:"id" bson:"id"`                           // 主键
-	UserAddress     string `json:"user_address" bson:"user_address"`       // 用户地址
+	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"`   // 用户地址
 	ContractAddress string `json:"_" bson:"contract_address"`              // 合约地址
 	TokenId         string `json:"_" bson:"token_id"`                      // token id
 	Owner           string `json:"owner" bson:"owner"`                     // 所有者地址
@@ -141,21 +147,30 @@ type AssetsTopOwnership struct {
 }
 
 type ItemActivity struct {
-	Id                  int    `json:"id"`
-	UserAddress         string `json:"user_address" bson:"user_address"`
-	ContractAddress     string `json:"contract_address" bson:"contract_address"`
-	TokenId             string `json:"token_id" bson:"token_id"`
-	BidAmount           string `json:"bid_amount" bson:"bid_amount"` // 投标金额
-	CreateDate          string `json:"create_date" bson:"create_date"`
-	TotalPrice          string `json:"total_price" bson:"total_price"`                       // 成交价格
-	Seller              string `json:"seller" bson:"seller"`                                 // 售卖者地址
-	SellerProfileImgURL string `json:"seller_profile_img_url" bson:"seller_profile_img_url"` // 售卖者头像
-	Winner              string `json:"winner" bson:"winner"`                                 // 购买者地址
-	WinnerProfileImgURL string `json:"winner_profile_img_url" bson:"winner_profile_img_url"` // 购买者头像
-	IsDelete            int8   `json:"is_delete" bson:"is_delete"`                           // 是否删除 1删除 0未删除 默认为0
-	EventType           string `json:"event_type" bson:"event_type"`                         // 事件类型
-
-	Transaction struct {
+	Id               int              `json:"id" bson:"id"`
+	CollectibleId    int              `json:"collectibleId" bson:"collectibleId"`     // NFT id
+	CollectibleName  string           `json:"collectibleName" bson:"collectibleName"` // NFT 名字
+	CollectionId     string           `json:"collectionId" bson:"collectionId"`       // 集合ID
+	CollectionName   string           `json:"collectionName" bson:"collectionName"`   // 集合名
+	ContractAddress  string           `json:"contract_address" bson:"contract_address"`
+	TokenId          string           `json:"token_id" bson:"token_id"`
+	BidAmount        string           `json:"bid_amount" bson:"bid_amount"` // 投标金额
+	CreateDate       string           `json:"create_date" bson:"create_date"`
+	Price            string           `json:"price" bson:"price"`                           // 成交价格ETH
+	PriceInUsd       string           `json:"priceInUsd " bson:"priceInUsd "`               // 成交价格USD
+	SellerId         int              `json:"sellerId" bson:"sellerId"`                     // 售卖者ID
+	SellerMetamaskId string           `json:"sellerMetamaskId" bson:"sellerMetamaskId"`     // 售卖者地址
+	SellerName       string           `json:"sellerName" bson:"sellerName"`                 // 售卖者名字
+	SellerImgURL     string           `json:"sellerImgURL" bson:"sellerImgURL"`             // 售卖者头像
+	BuyerId          int              `json:"buyerId" bson:"buyerId"`                       // 购买者ID
+	BuyerMetamaskId  string           `json:"buyerMetamaskId" bson:"buyerMetamaskId"`       // 购买者地址
+	BuyerName        string           `json:"buyerName" bson:"buyerName"`                   // 购买者名字
+	BuyerImgURL      string           `json:"buyerImgURL" bson:"buyerImgURL"`               // 购买者头像
+	Quantity         string           `json:"quantity" bson:"quantity"`                     // 数量
+	IsDelete         int8             `json:"is_delete" bson:"is_delete"`                   // 是否删除 1删除 0未删除 默认为0
+	TradeType        string           `json:"tradeType " bson:"tradeType"`                  // 事件类型
+	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+	Transaction      struct {
 		BlockHash   string `json:"block_hash" bson:"block_hash"`
 		BlockNumber string `json:"block_number" bson:"block_number"`
 		FromAccount struct {
@@ -703,14 +718,16 @@ type AutoEvent struct {
 		Name     interface{} `json:"name"`
 		Decimals int         `json:"decimals"`
 		EthPrice string      `json:"eth_price"`
-		UsdPrice string      `json:"usd_price"`
+		UsdPrice interface{} `json:"usd_price"`
 	} `json:"payment_token"`
 	Quantity string `json:"quantity"`
 	Seller   struct {
-		User          interface{} `json:"user"`
-		ProfileImgURL string      `json:"profile_img_url"`
-		Address       string      `json:"address"`
-		Config        string      `json:"config"`
+		User struct {
+			Username string `json:"username"`
+		} `json:"user"`
+		ProfileImgURL string `json:"profile_img_url"`
+		Address       string `json:"address"`
+		Config        string `json:"config"`
 	} `json:"seller"`
 	StartingPrice interface{} `json:"starting_price"`
 	ToAccount     interface{} `json:"to_account"`
@@ -739,7 +756,7 @@ type AutoEvent struct {
 	} `json:"transaction" bson:"transaction"` // 支付的eth链上交易记录
 	WinnerAccount struct {
 		User struct {
-			Username interface{} `json:"username"`
+			Username string `json:"username"`
 		} `json:"user"`
 		ProfileImgURL string `json:"profile_img_url"`
 		Address       string `json:"address"`

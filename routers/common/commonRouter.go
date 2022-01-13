@@ -17,7 +17,9 @@ func HostManager(router *gin.RouterGroup) {
 	//router.GET(constants.URL_OPENSEA_OWNER_ASSETS, OpenSeaOwnerAssetsSync)
 	//router.GET(constants.URL_OPENSEA_OWNER_Collections, OpenSeaOwnerCollectionsSync)
 	router.GET(constants.URL_FIND_ASSET, GetAssetsByOwner)
-	router.GET(constants.URL_FIND_COLLECTION, GetCollectionsByOwner)
+	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByUserMetamaskID)
+	router.GET(constants.URL_FIND_COLLECTION_COLLECTIONID, GetCollectionsByCollectionID)
+	router.GET(constants.URL_FIND_COLLECTION_ITEM_ACTIVITY_COLLECTIONID, GetItemActivityByCollectionID)
 	router.GET(constants.URL_FIND_ASSETS_SLUG, GetAssetsBySlug)
 	router.DELETE(constants.URL_DELETE_ASSET, DeleteAssetByTokenID)
 	router.DELETE(constants.URL_DELETE_COLLECTION, DeleteCollectionBySlug)
@@ -44,36 +46,6 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 		return
 	}
 	// sync collections
-	if err := openSeaOwnerCollectionsSync(user); err != nil {
-		logs.GetLogger().Error(err)
-		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
-		return
-	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
-}
-
-// Deprecated: Recommended use OpenSeaOwnerDataSync
-func OpenSeaOwnerAssetsSync(c *gin.Context) {
-	user := c.Param("user")
-	if len(user) != 42 {
-		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
-		return
-	}
-	if err := openSeaOwnerAssetsSync(user); err != nil {
-		logs.GetLogger().Error(err)
-		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
-		return
-	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
-}
-
-// Deprecated: Recommended use OpenSeaOwnerDataSync
-func OpenSeaOwnerCollectionsSync(c *gin.Context) {
-	user := c.Param("user")
-	if len(user) != 42 {
-		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
-		return
-	}
 	if err := openSeaOwnerCollectionsSync(user); err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
@@ -115,11 +87,11 @@ func GetAssetsByOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
-func GetCollectionsByOwner(c *gin.Context) {
-	user := c.Param("user")
+func GetCollectionsByUserMetamaskID(c *gin.Context) {
+	usermetamaskid := c.Param("usermetamaskid")
 	page := c.Query("page")
 	pageSize := c.Query("pageSize")
-	if len(user) != 42 {
+	if len(usermetamaskid) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
@@ -137,7 +109,69 @@ func GetCollectionsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	result, err := getCollectionsByOwner(user, pageInt, pageSizeInt)
+	result, err := getCollectionsByUserMetamaskID(usermetamaskid, pageInt, pageSizeInt)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
+}
+
+func GetCollectionsByCollectionID(c *gin.Context) {
+	collectionId := c.Param("collectionId")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
+	if collectionId == "" {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt < 1 || pageSizeInt < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getCollectionsByCollectionID(collectionId, pageInt, pageSizeInt)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
+}
+
+func GetItemActivityByCollectionID(c *gin.Context) {
+	collectionId := c.Param("collectionId")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
+	if collectionId == "" {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt < 1 || pageSizeInt < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getItemActivityByCollectionId(collectionId, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))

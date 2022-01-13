@@ -99,8 +99,28 @@ func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interfa
 }
 
 // getCollectionsByOwner get collection by owner
-func getCollectionsByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindCollectionByOwner(user, page, pageSize)
+func getCollectionsByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindCollectionByUserMetamaskID(usermetamaskid, page, pageSize)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getCollectionsByCollectionID get collection by slug
+func getCollectionsByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindCollectionByCollectionID(collectionId, page, pageSize)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getItemActivityByCollectionId get item_activity by collectionId
+func getItemActivityByCollectionId(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindItemActivityByCollectionId(collectionId, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
