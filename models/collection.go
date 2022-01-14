@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
@@ -18,23 +19,22 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 	refreshTime := int(time.Now().Unix())
 	for _, v := range collections.Collections {
 		var collection = Collection{
-			Slug:            v.Slug,
-			UserAddress:     user,
-			Name:            v.Name,
-			Description:     v.Description,
-			BannerImageURL:  v.BannerImageURL,
-			ImageURL:        v.ImageURL,
-			LargeImageURL:   v.LargeImageURL,
-			CreateDate:      v.CreatedDate,
-			RefreshTime:     refreshTime,
-			NumOwners:       v.Stats.NumOwners,
-			TotalSupply:     int(v.Stats.TotalSupply),
-			TotalVolume:     v.Stats.TotalVolume,
-			FloorPrice:      v.Stats.FloorPrice,
-			OwnedAssetCount: v.OwnedAssetCount.String(),
+			ID:                 v.Slug,
+			UserMetamaskID:     user,
+			CollectionName:     v.Name,
+			Description:        v.Description,
+			BannerImageURL:     v.BannerImageURL,
+			CoverImageUrl:      v.ImageURL,
+			CoverLargeImageURL: v.LargeImageURL,
+			CreateDate:         v.CreatedDate,
+			RefreshTime:        refreshTime,
+			OwnersCount:        v.Stats.NumOwners,
+			ItemsCount:         int(v.Stats.TotalSupply),
+			TotalVolume:        v.Stats.TotalVolume,
+			FloorPrice:         v.Stats.FloorPrice,
 		}
 		count, err := db.Collection("collections").
-			CountDocuments(context.TODO(), bson.M{"user_address": user, "slug": v.Slug, "is_delete": 0})
+			CountDocuments(context.TODO(), bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
@@ -46,12 +46,20 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			}
 		} else {
 			// update
+			collectionByte, err := bson.Marshal(collection)
+			if err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+			var tmpCollection bson.M
+			if err := bson.Unmarshal(collectionByte, &tmpCollection); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
 			if _, err = db.Collection("collections").UpdateOne(
 				context.TODO(),
-				bson.M{"user_address": user, "slug": v.Slug, "is_delete": 0},
-				bson.M{"$set": bson.M{"name": v.Name, "description": v.Description, "banner_image_url": v.BannerImageURL,
-					"image_url": v.ImageURL, "large_image_url": v.LargeImageURL, "refresh_time": refreshTime, "floor_price": v.Stats.FloorPrice,
-				}}); err != nil {
+				bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0},
+				bson.M{"$set": tmpCollection}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}
@@ -60,8 +68,8 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 
 	if _, err := db.Collection("collections").UpdateMany(
 		context.TODO(),
-		bson.M{"user_address": user, "refresh_time": bson.M{"$lt": refreshTime}, "is_delete": 0},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "refreshTime": bson.M{"$lt": refreshTime}, "isDelete": 0},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
@@ -69,14 +77,14 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 
 }
 
-// FindCollectionByOwner find collections by owner
-func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+// FindCollectionByUserMetamaskID find collections by usermetamaskid
+func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections []bson.M
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -87,22 +95,81 @@ func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interf
 	}
 
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"user_address": user, "is_delete": 0}}},
+		{{"$match", bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
 			"from":     "users",
-			"let":      bson.M{"user_address": "$user_address"},
-			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$user_address", "$$user_address"}}}}},
+			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
+			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$userMetamaskId", "$$userMetamaskId"}}}}},
 			"as":       "user_item",
 		}}},
 		{{
 			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
 		}},
 		{{
-			"$addFields", bson.M{"username": "$user_item.username", "user_img_url": "$user_item.user_img_url"},
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
 		}},
-		{{"$project", bson.M{"_id": 0, "update_time": 0}}},
+		{{"$project",
+			bson.M{
+				"id": 1, "userId": 1, "userMetamaskId": 1, "coverImageUrl ": 1, "avatarUrl": 1, "userName": 1,
+				"collectionName": 1, "description": 1,
+			},
+		}},
+	}
+	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &collections); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+
+	result["data"] = collections
+	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+
+	return result, nil
+}
+
+// FindCollectionByCollectionID find collections by collectionId
+func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
+	var (
+		collections []bson.M
+		result      = make(map[string]interface{})
+	)
+	db := database.GetMongoClient()
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "isDelete": 0})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	totalPage := total / pageSize
+	if total%pageSize != 0 {
+		totalPage++
+	}
+	fmt.Println(total)
+	pipe := mongo.Pipeline{
+		{{"$match", bson.M{"id": collectionId, "isDelete": 0}}},
+		{{"$skip", (page - 1) * pageSize}},
+		{{"$limit", pageSize}},
+		{{"$lookup", bson.M{
+			"from":     "users",
+			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
+			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$userMetamaskId", "$$userMetamaskId"}}}}},
+			"as":       "user_item",
+		}}},
+		{{
+			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
+		}},
+		{{
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
+		}},
+		{{"$project",
+			bson.M{"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
+				"itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1, "collectionName": 1, "likesCount": 1,
+				"viewsCount": 1, "description": 1}}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
@@ -124,7 +191,7 @@ func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interf
 func DeleteCollectionBySlug(user, slug string) error {
 	db := database.GetMongoClient()
 	row, err := db.Collection("assets").CountDocuments(
-		context.TODO(), bson.M{"user_address": user, "slug": slug, "is_delete": 0})
+		context.TODO(), bson.M{"userMetamaskId": user, "slug": slug, "is_delete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return err
@@ -137,8 +204,8 @@ func DeleteCollectionBySlug(user, slug string) error {
 
 	if _, err := db.Collection("collections").UpdateMany(
 		context.TODO(),
-		bson.M{"user_address": user, "slug": slug, "is_delete": 0},
-		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		bson.M{"userMetamaskId": user, "id": slug, "isDelete": 0},
+		bson.M{"$set": bson.M{"isDelete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}

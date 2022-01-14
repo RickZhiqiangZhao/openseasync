@@ -34,7 +34,7 @@ func main() {
 		ValidateHeaders: false,
 	}))
 
-	v1 := r.Group("/api/v1")
+	v1 := r.Group("/api")
 	common.HostManager(v1.Group(constants.URL_HOST_GET_COMMON))
 	err := r.Run(":" + config.GetConfig().Port)
 	if err != nil {
