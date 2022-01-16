@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"openseasync/common"
 	"openseasync/common/utils"
 	"openseasync/logs"
@@ -78,9 +79,9 @@ func openSeaOwnerCollectionsSync(user string) error {
 	return nil
 }
 
-// getAssetByOwner get assets by owner
-func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindAssetByOwner(user, nil, page, pageSize)
+// getAssetSearchByOwner get assets by owner
+func getAssetSearchByOwner(collectionId string, param models.Params) (map[string]interface{}, error) {
+	result, err := models.FindAssetSearchByOwner(collectionId, param)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -88,9 +89,19 @@ func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{},
 	return result, nil
 }
 
-// getAssetBySlug get assets by owner
-func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindAssetByOwner(user, slug, page, pageSize)
+// getAssetGeneralInfoByCollectibleId get assets by collectibleId
+func getAssetGeneralInfoByCollectibleId(collectibleId int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetByGeneralInfoCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getAssetOtherByCollection get assets other by collectibleId
+func getAssetOtherByCollection(collectibleId int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetOtherByCollection(collectibleId)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -118,9 +129,39 @@ func getCollectionsByCollectionID(collectionId string, page, pageSize int64) (ma
 	return result, nil
 }
 
+// getAssetOfferRecordsByCollectibleId get asset orders by collectibleId
+func getAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) {
+	result, err := models.FindAssetOfferRecordsByCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getUserMediaByUserId find user media by userId
+func getUserMediaByUserId(userId string) (bson.M, error) {
+	result, err := models.FindUserMediaByUserId(userId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
 // getItemActivityByCollectionId get item_activity by collectionId
 func getItemActivityByCollectionId(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindItemActivityByCollectionId(collectionId, page, pageSize)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getTradeHistoryByCollectibleId get trade history by collectibleId
+func getTradeHistoryByCollectibleId(collectibleId int64, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindTradeHistoryByCollectibleId(collectibleId, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -137,9 +178,9 @@ func deleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	return nil
 }
 
-// deleteCollectionBySlug delete collection
-func deleteCollectionBySlug(user, slug string) error {
-	if err := models.DeleteCollectionBySlug(user, slug); err != nil {
+// deleteCollectionByCollectionId delete collection
+func deleteCollectionByCollectionId(user, slug string) error {
+	if err := models.DeleteCollectionByCollectionId(user, slug); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
