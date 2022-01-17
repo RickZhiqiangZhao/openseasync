@@ -317,3 +317,12 @@ func RequestOpenSeaEvent(contractAddress, tokenId string) ([]byte, error) {
 	}
 	return content, nil
 }
+
+func ParseTime(timeStr string) int64 {
+	str := strings.Split(timeStr, ".")[0]
+	str = strings.ReplaceAll(str, "T", " ")
+	i, _ := time.Parse("2006-01-02 15:04:05", str)
+	i = i.Add(-time.Hour * 8)
+	tm := i.Unix()
+	return tm
+}
