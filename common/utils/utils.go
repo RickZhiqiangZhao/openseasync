@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	//"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -109,19 +109,19 @@ func GetOffsetByPagenumber(pageNumber, pageSize string) (int64, error) {
 	return offset, nil
 }
 
-func DecodeJwtToken(tokenStr string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenStr, nil)
-	if token == nil {
-		return nil, err
-	}
-	claims, _ := token.Claims.(jwt.MapClaims)
-
-	for key, element := range claims {
-		fmt.Println("Key:", key, "=>", "Element:", element)
-	}
-
-	return claims, nil
-}
+//func DecodeJwtToken(tokenStr string) (jwt.MapClaims, error) {
+//	token, err := jwt.Parse(tokenStr, nil)
+//	if token == nil {
+//		return nil, err
+//	}
+//	claims, _ := token.Claims.(jwt.MapClaims)
+//
+//	for key, element := range claims {
+//		fmt.Println("Key:", key, "=>", "Element:", element)
+//	}
+//
+//	return claims, nil
+//}
 func HttpUploadFileByStream(uri, filefullpath string) (string, error) {
 	fileReader, err := os.Open(filefullpath)
 	if err != nil {

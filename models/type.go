@@ -73,8 +73,8 @@ type Collection struct {
 	RefreshTime        int     `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	ItemsCount         int     `json:"itemsCount" bson:"itemsCount"`                 // 集合中NFT总数
 	TotalVolume        float64 `json:"totalVolume" bson:"totalVolume"`               // 交易量
-	FloorPrice         float64 `json:"floorPrice"`                                   // 最低价格
-	HighestPrice       float64 `json:"highestPrice"`                                 // 最高价格
+	FloorPrice         float64 `json:"floorPrice" bson:"floorPrice"`                 // 最低价格
+	HighestPrice       float64 `json:"highestPrice" bson:"highestPrice"`             // 最高价格
 	OwnersCount        int     `json:"ownersCount" bson:"ownersCount"`               // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
 	LikesCount         int     `json:"likesCount" bson:"likesCount"`
 	ViewsCount         int     `json:"viewsCount" bson:"viewsCount"`
