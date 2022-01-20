@@ -12,7 +12,7 @@ import (
 // FindItemActivityByCollectionId find item_activity by collection_id
 func FindItemActivityByCollectionId(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		itemActivitys []bson.M
+		itemActivitys = make([]bson.M, 0)
 		result        = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
@@ -62,7 +62,7 @@ func FindItemActivityByCollectionId(collectionId string, page, pageSize int64) (
 // FindTradeHistoryByCollectibleId find item_activity by collectibleId
 func FindTradeHistoryByCollectibleId(collectibleId int64, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		itemActivitys []bson.M
+		itemActivitys = make([]bson.M, 0)
 		result        = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()

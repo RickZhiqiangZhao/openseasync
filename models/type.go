@@ -7,10 +7,10 @@ type User struct {
 	UserMetamaskID   string `json:"userMetamaskId" bson:"userMetamaskId"`     // 用户地址
 	Username         string `json:"userName" bson:"userName"`                 // 用户头像
 	AvatarUrl        string `json:"avatarUrl" bson:"avatarUrl"`               // 用户头像
-	DiscordLink      string `json:"discordLink" bson:"discordLink"`           // discord链接
-	TelegramLink     string `json:"telegramLink" bson:"telegramLink"`         // telegram链接
-	InstagramLink    string `json:"instagramLink" bson:"instagramLink"`       // instagram链接
-	TwitterLink      string `json:"twitterLink" bson:"twitterLink"`           // twitter链接
+	Discord          string `json:"discord" bson:"discord"`                   // discord链接
+	Telegram         string `json:"telegram" bson:"telegram"`                 // telegram链接
+	Instagram        string `json:"instagram" bson:"instagram"`               // instagram链接
+	Twitter          string `json:"twitter" bson:"twitter"`                   // twitter链接
 	PersonalPageLink string `json:"personalPageLink" bson:"personalPageLink"` // 个人链接
 }
 

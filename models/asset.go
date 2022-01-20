@@ -184,10 +184,10 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			Username:         v.Owner.User.Username,
 			AvatarUrl:        v.Owner.ProfileImgURL,
 			PersonalPageLink: v.ExternalLink,
-			DiscordLink:      v.Collection.DiscordURL,
-			TelegramLink:     v.Collection.TelegramURL,
-			TwitterLink:      v.Collection.TwitterUsername,
-			InstagramLink:    v.Collection.InstagramUsername,
+			Discord:          v.Collection.DiscordURL,
+			Telegram:         v.Collection.TelegramURL,
+			Twitter:          v.Collection.TwitterUsername,
+			Instagram:        v.Collection.InstagramUsername,
 		}
 		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
 			userModel.Username = v.Creator.User.Username
@@ -223,7 +223,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 // FindAssetSearchByOwner find assets by owner
 func FindAssetSearchByOwner(collectionId string, param Params) (map[string]interface{}, error) {
 	var (
-		assets []bson.M
+		assets = make([]bson.M, 0)
 		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
@@ -311,7 +311,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 // FindAssetByGeneralInfoCollectibleId find assets by collectibleId
 func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interface{}, error) {
 	var (
-		assets []bson.M
+		assets = make([]bson.M, 0)
 		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
@@ -354,7 +354,7 @@ func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interf
 }
 
 func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) {
-	var orders []bson.M
+	var orders = make([]bson.M, 0)
 	db := database.GetMongoClient()
 	opts := options.Find().SetProjection(
 		bson.D{
@@ -382,7 +382,7 @@ func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error)
 func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, error) {
 	var (
 		asset  Asset
-		assets []bson.M
+		assets = make([]bson.M, 0)
 		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
