@@ -79,7 +79,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 // FindCollectionByUserMetamaskID find collections by usermetamaskid
 func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		collections []bson.M
+		collections = make([]bson.M, 0)
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
@@ -135,7 +135,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 // FindCollectionByCollectionID find collections by collectionId
 func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		collections []bson.M
+		collections = make([]bson.M, 0)
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
