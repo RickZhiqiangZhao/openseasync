@@ -186,12 +186,15 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 }
 
 // FindUserMediaByUserId find user media by userId
-func FindUserMediaByUserId(userId string) (bson.M, error) {
+func FindUserMediaByUserId(userId string) (interface{}, error) {
 	var user bson.M
 	db := database.GetMongoClient()
 	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"id": userId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
+	}
+	if user == nil {
+		return User{}, nil
 	}
 	return user, nil
 }

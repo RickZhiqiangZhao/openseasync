@@ -140,7 +140,7 @@ func getAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) 
 }
 
 // getUserMediaByUserId find user media by userId
-func getUserMediaByUserId(userId string) (bson.M, error) {
+func getUserMediaByUserId(userId string) (interface{}, error) {
 	result, err := models.FindUserMediaByUserId(userId)
 	if err != nil {
 		logs.GetLogger().Error(err)
