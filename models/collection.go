@@ -187,14 +187,11 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 
 // FindUserMediaByUserId find user media by userId
 func FindUserMediaByUserId(userId string) (interface{}, error) {
-	var user bson.M
+	var user User
 	db := database.GetMongoClient()
-	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"id": userId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
+	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"userMetamaskId": userId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
-	}
-	if user == nil {
-		return User{}, nil
 	}
 	return user, nil
 }

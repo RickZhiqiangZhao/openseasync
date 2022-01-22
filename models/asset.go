@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	uuid2 "github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -263,8 +264,9 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 			},
 			}},
 		}},
-		{{"$match", bson.M{"price": bson.M{"$gte": param.MinPrice, "$lte": param.MaxPrice}}}},
+		{{"$match", bson.M{"price": bson.M{"$gte": param.MinPrice * math.Pow10(18), "$lte": param.MaxPrice * math.Pow10(18)}}}},
 	}
+	fmt.Println(param.MaxPrice * math.Pow10(18))
 	cursor, err := db.Collection("assets").Aggregate(context.TODO(), cond)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)

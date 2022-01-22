@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
+
 	//"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -325,4 +327,14 @@ func ParseTime(timeStr string) int64 {
 	i = i.Add(-time.Hour * 8)
 	tm := i.Unix()
 	return tm
+}
+
+func EthToWei(value float64) *big.Int {
+	val := big.NewFloat(value)
+	base := new(big.Float)
+	base.SetInt(big.NewInt(int64(math.Pow10(18))))
+	val.Mul(val, base)
+	result := new(big.Int)
+	val.Int(result)
+	return result
 }
