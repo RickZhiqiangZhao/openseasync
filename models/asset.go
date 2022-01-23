@@ -15,15 +15,13 @@ import (
 	"openseasync/database"
 	"openseasync/logs"
 	"strconv"
-	"time"
 )
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000"
 
 // InsertOpenSeaAsset query Aseets through opensea API and insert
-func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
+func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) error {
 	db := database.GetMongoClient()
-	refreshTime := int64(time.Now().Unix())
 
 	for _, v := range assets.Assets {
 		uuidOrder, _ := uuid2.NewUUID()
@@ -104,7 +102,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			asset.SellOrders.PayTokenContract.UsdPrice = sellOrders.PaymentTokenContract.UsdPrice
 		}
 		// insert transaction
-		time.Sleep(time.Second * 2)
+		//time.Sleep(time.Second * 2)
 		createDate, err := insertTransaction(db, v.AssetContract.Address, v.TokenID)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -112,7 +110,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		}
 		asset.CreateDate = createDate
 
-		time.Sleep(time.Second * 2)
+		//time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
 		resp, err := utils.RequestOpenSeaSingleAsset(v.AssetContract.Address, v.TokenID)
 		if err != nil {

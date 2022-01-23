@@ -7,15 +7,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
 	"openseasync/logs"
-	"time"
 )
 
 var CONNOT_DELETE_COLLECTION_ERR = errors.New("Cannot delete a collection that has an asset")
 
 // InsertOpenSeaCollection find collection through opensea API and insert
-func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
+func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshTime int64) error {
 	db := database.GetMongoClient()
-	refreshTime := int(time.Now().Unix())
+
 	for _, v := range collections.Collections {
 		var collection = Collection{
 			ID:                 v.Slug,
