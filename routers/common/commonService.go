@@ -23,6 +23,7 @@ func getSwanMinerHostInfo() *common.HostInfo {
 // openSeaOwnerAssetsSync get all assets by owner
 func openSeaOwnerAssetsSync(user string) error {
 	var n int64 = 1
+	refreshTime := time.Now().Unix()
 	for {
 		// If the number of requests is too many, a 429 error code will be thrown
 		content, err := utils.RequestOpenSeaAssets(user, 50*(n-1), 50)
@@ -38,7 +39,7 @@ func openSeaOwnerAssetsSync(user string) error {
 		if len(assets.Assets) < 1 {
 			break
 		}
-		if err = models.InsertOpenSeaAsset(&assets, user); err != nil {
+		if err = models.InsertOpenSeaAsset(&assets, user, refreshTime); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
@@ -46,7 +47,7 @@ func openSeaOwnerAssetsSync(user string) error {
 			break
 		}
 		n++
-		time.Sleep(time.Second)
+		//time.Sleep(time.Second)
 	}
 
 	return nil
@@ -55,8 +56,9 @@ func openSeaOwnerAssetsSync(user string) error {
 // openSeaOwnerCollectionsSync get all collections by owner
 func openSeaOwnerCollectionsSync(user string) error {
 	var n int64 = 1
+	refreshTime := time.Now().Unix()
 	for {
-		time.Sleep(time.Second * 2)
+		//time.Sleep(time.Second * 2)
 		content, err := utils.RequestOpenSeaCollections(user, 300*(n-1), 300*n)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -67,7 +69,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
-		if err = models.InsertOpenSeaCollection(&collections, user); err != nil {
+		if err = models.InsertOpenSeaCollection(&collections, user, refreshTime); err != nil {
 			return err
 		}
 		if len(collections.Collections) < 300 {

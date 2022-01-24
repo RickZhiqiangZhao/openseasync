@@ -70,7 +70,7 @@ type Collection struct {
 	CoverLargeImageUrl string  `json:"coverLargeImageURL" bson:"coverLargeImageURL"` // 头像大图
 	IsDelete           int8    `json:"isDelete" bson:"isDelete"`                     // 是否删除 1删除 0未删除 默认为0
 	CreateDate         string  `json:"createDate" bson:"createDate"`                 // 集合创建时间
-	RefreshTime        int     `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
+	RefreshTime        int64   `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	ItemsCount         int     `json:"itemsCount" bson:"itemsCount"`                 // 集合中NFT总数
 	TotalVolume        float64 `json:"totalVolume" bson:"totalVolume"`               // 交易量
 	FloorPrice         float64 `json:"floorPrice" bson:"floorPrice"`                 // 最低价格
@@ -124,17 +124,17 @@ type PayTokenContract struct {
 
 type Trait struct {
 	//ID              int64  `json:"id" bson:"id"`                     // 主键
-	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
-	ContractAddress string `json:"_" bson:"contractAddress"`             // 合约地址
-	TokenId         string `json:"_" bson:"token_id"`                    // token id
-	TraitType       string `json:"traitType" bson:"traitType"`           // 特征类型
-	Value           string `json:"value" bson:"value"`                   // 特征值
-	DisplayType     string `json:"displayType" bson:"displayType"`
-	MaxValue        int    `json:"maxValue" bson:"maxValue"`
-	TraitCount      int    `json:"traitCount" bson:"traitCount"` // 数量
-	OrderBy         string `json:"orderBy" bson:"orderBy"`
-	IsDelete        int8   `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int64  `json:"refreshTime" bson:"refreshTime"` // 刷新时间
+	UserMetamaskID  string      `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
+	ContractAddress string      `json:"_" bson:"contractAddress"`             // 合约地址
+	TokenId         string      `json:"_" bson:"token_id"`                    // token id
+	TraitType       string      `json:"traitType" bson:"traitType"`           // 特征类型
+	Value           interface{} `json:"value" bson:"value"`                   // 特征值
+	DisplayType     string      `json:"displayType" bson:"displayType"`
+	MaxValue        interface{} `json:"maxValue" bson:"maxValue"`
+	TraitCount      int         `json:"traitCount" bson:"traitCount"` // 数量
+	OrderBy         string      `json:"orderBy" bson:"orderBy"`
+	IsDelete        int8        `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime     int64       `json:"refreshTime" bson:"refreshTime"` // 刷新时间
 }
 
 type AssetsTopOwnership struct {
@@ -501,12 +501,12 @@ type AutoAsset struct {
 		Config        string `json:"config"`
 	} `json:"creator"`
 	Traits []struct {
-		TraitType   string `json:"trait_type"`
-		Value       string `json:"value"`
-		DisplayType string `json:"display_type"`
-		MaxValue    int    `json:"max_value"`
-		TraitCount  int    `json:"trait_count"`
-		Order       string `json:"order"`
+		TraitType   string      `json:"trait_type"`
+		Value       interface{} `json:"value"`
+		DisplayType string      `json:"display_type"`
+		MaxValue    interface{} `json:"max_value"`
+		TraitCount  int         `json:"trait_count"`
+		Order       string      `json:"order"`
 	} `json:"traits"`
 	TopOwnerships []struct {
 		Owner struct {

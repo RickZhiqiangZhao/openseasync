@@ -102,5 +102,5 @@ const (
 	OPENSEA_PROD_EVENT_URL        = "https://api.opensea.io/events"
 
 	// OPENSEA API KEY
-	OPENSEA_API_KEY = "" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
+	OPENSEA_API_KEY = "6ac2260399914f6abd5955a07b1d55b9" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
 )
