@@ -33,10 +33,11 @@ type Asset struct {
 	CreatorPersonalSite string `json:"creatorPersonalSite" bson:"creatorPersonalSite"` // NFT创造者个人网站
 	CreatorName         string `json:"creatorName" bson:"creatorName"`                 // NFT创造者名字
 	CreatorImgUrl       string `json:"creatorImgUrl" bson:"creatorImgUrl"`             // 创造者头像
-	TokenMetadata       string `json:"tokenMetadata" bson:"tokenMetadata"`             // NFT元数据
 
-	CollectionID string `json:"collectionId" bson:"collectionId"` // 集合 id
-	RecordId     string `json:"recordId" bson:"recordId"`         // 售卖记录 id
+	CollectionID   string `json:"collectionId" bson:"collectionId"`     // 集合 id
+	CollectionName string `json:"collectionName" bson:"collectionName"` // 集合 name
+
+	RecordId string `json:"recordId" bson:"recordId"` // 售卖记录 id
 
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assetsTopOwnerships" bson:"assetsTopOwnerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
@@ -102,9 +103,9 @@ type Orders struct {
 	UUID              string           `json:"uuid" bson:"uuid"`
 	Id                string           `json:"id" bson:"id"`                       // 订单hash
 	CollectibleId     int              `json:"collectibleId" bson:"collectibleId"` // NFT id
-	CreateDate        string           `json:"createDate" bson:"createDate"`       // 创建时间
+	StartTime         string           `json:"startTime" bson:"startTime"`         // 创建时间
 	BidTime           string           `json:"bidTime" bson:"bidTime"`             // 投标时间
-	ClosingDate       string           `json:"closingDate" bson:"closingDate"`     // 结束时间
+	EndTime           string           `json:"endTime" bson:"endTime"`             // 结束时间
 	Price             string           `json:"price" bson:"price"`                 // 当前价格
 	BasePrice         string           `json:"basePrice" bson:"basePrice"`         // 基础价格
 	CurrentBounty     string           `json:"currentBounty" bson:"currentBounty"`
@@ -113,6 +114,7 @@ type Orders struct {
 	AuctionUserName   string           `json:"auctionUserName" bson:"auctionUserName"`
 	PayTokenContract  PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
 	IsDelete          int8             `json:"isDelete" bson:"isDelete"`                 // 是否删除 1删除 0未删除 默认为0
+	TradeType         string           `json:"tradeType " bson:"tradeType"`              // 事件类型
 }
 
 type PayTokenContract struct {
@@ -771,9 +773,49 @@ type AutoEvent struct {
 type Params struct {
 	Page     int64   `form:"page" binding:"numeric,min=1"`
 	PageSize int64   `form:"pageSize" binding:"numeric,min=1"`
-	Status   int64   `form:"status" binding:"oneof=0 1"`
+	Status   int64   `form:"status" binding:"oneof=0 1 2"`
 	SortBy   int64   `form:"sortBy" binding:"oneof=0 1 2 3 4 5 6"`
 	MinPrice float64 `form:"minPrice" binding:"numeric,min=0"`
 	MaxPrice float64 `form:"maxPrice" binding:"numeric,min=0"`
 	Field    string  `form:"field"`
+}
+
+type ResponseCollection struct {
+	Id             string  `json:"id"`
+	UserId         string  `json:"userId"`
+	UserMetamaskId string  `json:"userMetamaskId"`
+	UserCoverUrl   string  `json:"userCoverUrl"`
+	AvatarUrl      string  `json:"avatarUrl"`
+	UserName       string  `json:"userName"`
+	ItemsCount     int     `json:"itemsCount"`
+	OwnersCount    int     `json:"ownersCount"`
+	LikesCount     int     `json:"likesCount"`
+	ViewsCount     int     `json:"viewsCount"`
+	FloorPrice     int     `json:"floorPrice"`
+	HighestPrice   float64 `json:"highestPrice"`
+	CollectionName string  `json:"collectionName"`
+	Description    string  `json:"description"`
+}
+
+type ResponseAsset struct {
+	Id                  int     `json:"id"`
+	CollectibleName     string  `json:"collectibleName"`
+	CollectionId        string  `json:"collectionId"`
+	CollectionName      string  `json:"collectionName"`
+	CreatorId           string  `json:"creatorId"`
+	CreatorMetamaskId   string  `json:"creatorMetamaskId"`
+	CreatorName         string  `json:"creatorName"`
+	CreatorPersonalSite string  `json:"creatorPersonalSite"`
+	Description         string  `json:"description"`
+	FileUrl             string  `json:"fileUrl"`
+	OwnerId             string  `json:"ownerId"`
+	OwnerMetamaskId     string  `json:"ownerMetamaskId"`
+	OwnerName           string  `json:"ownerName"`
+	Price               float64 `json:"price"`
+	Status              string  `json:"status"`
+	ThumbnailUrl        string  `json:"thumbnailUrl"`
+	CollectibleTokenId  string  `json:"collectibleTokenId"`
+	RecordId            string  `json:"recordId"`
+	StartTime           string  `json:"startTime"`
+	EndTime             string  `json:"endTime"`
 }

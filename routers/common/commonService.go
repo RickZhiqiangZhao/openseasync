@@ -47,7 +47,7 @@ func openSeaOwnerAssetsSync(user string) error {
 			break
 		}
 		n++
-		//time.Sleep(time.Second)
+		time.Sleep(time.Second)
 	}
 
 	return nil
@@ -58,7 +58,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 	var n int64 = 1
 	refreshTime := time.Now().Unix()
 	for {
-		//time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 2)
 		content, err := utils.RequestOpenSeaCollections(user, 300*(n-1), 300*n)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -111,6 +111,16 @@ func getAssetOtherByCollection(collectibleId int64) (map[string]interface{}, err
 	return result, nil
 }
 
+// getOrdersHighestPriceByCollectibleId find highest price by collectibled
+func getOrdersHighestPriceByCollectibleId(collectibleId int64) (interface{}, error) {
+	result, err := models.FindOrdersHighestPriceByCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
 // getCollectionsByOwner get collection by owner
 func getCollectionsByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindCollectionByUserMetamaskID(usermetamaskid, page, pageSize)
@@ -122,8 +132,8 @@ func getCollectionsByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 }
 
 // getCollectionsByCollectionID get collection by slug
-func getCollectionsByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindCollectionByCollectionID(collectionId, page, pageSize)
+func getCollectionsByCollectionID(collectionId string) (map[string]interface{}, error) {
+	result, err := models.FindCollectionByCollectionID(collectionId)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err

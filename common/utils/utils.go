@@ -216,7 +216,9 @@ func RequestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
 
 	url := fmt.Sprintf("%s?owner=%s&offset=%d&limit=%d", openSeaAssetsURL, owner, offset, limit)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
-	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	if !config.GetConfig().Dev {
+		req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -241,7 +243,9 @@ func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	if !config.GetConfig().Dev {
+		req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -271,7 +275,9 @@ func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) 
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	if !config.GetConfig().Dev {
+		req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -301,7 +307,9 @@ func RequestOpenSeaEvent(contractAddress, tokenId string) ([]byte, error) {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	if !config.GetConfig().Dev {
+		req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
