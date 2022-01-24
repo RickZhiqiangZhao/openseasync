@@ -46,6 +46,7 @@ const (
 	URL_FIND_TRADE_HISTORY                         = "/collectibles/trade/:collectibleId/history"
 	URL_FIND_USER_SOCIALMEDIA                      = "/user/socialMedia/:userId"
 	URL_FIND_ASSETS_OFFERRECORDS                   = "/collectibles/offerRecords/:collectibleId"
+	URL_FIND_ASSETS_HIGHESTPRICE                   = "/collectibles/highestPrice/:collectibleId"
 	URL_FIND_ASSETS_OTTHER                         = "/collectibles/otherCollectibles/:collectibleId"
 	URL_DELETE_ASSET                               = "/assets/:user/:contract_address/:token_id"
 	URL_DELETE_COLLECTION                          = "/collections/:user/:slug"
@@ -102,5 +103,5 @@ const (
 	OPENSEA_PROD_EVENT_URL        = "https://api.opensea.io/events"
 
 	// OPENSEA API KEY
-	OPENSEA_API_KEY = "6ac2260399914f6abd5955a07b1d55b9" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
+	OPENSEA_API_KEY = "6ac2260399914f6abd5955a07b1d55b9"
 )

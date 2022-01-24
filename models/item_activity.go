@@ -91,7 +91,7 @@ func FindTradeHistoryByCollectibleId(collectibleId int64, page, pageSize int64) 
 			{"createDate", 1},
 		})
 	cursor, err := db.Collection("item_activitys").Find(context.TODO(), bson.M{"collectibleId": collectibleId, "isDelete": 0}, opts)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}

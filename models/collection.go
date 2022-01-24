@@ -116,7 +116,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 		}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -132,25 +132,15 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 }
 
 // FindCollectionByCollectionID find collections by collectionId
-func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
+func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, error) {
 	var (
+		collection  bson.M
 		collections = make([]bson.M, 0)
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "isDelete": 0})
-	if err != nil && err != mongo.ErrNoDocuments {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	totalPage := total / pageSize
-	if total%pageSize != 0 {
-		totalPage++
-	}
 	pipe := mongo.Pipeline{
 		{{"$match", bson.M{"id": collectionId, "isDelete": 0}}},
-		{{"$skip", (page - 1) * pageSize}},
-		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
 			"from":     "users",
 			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
@@ -168,8 +158,9 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 				"userName": 1, "itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1,
 				"collectionName": 1, "likesCount": 1, "viewsCount": 1, "description": 1}}},
 	}
+
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -178,8 +169,12 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 		return nil, err
 	}
 
-	result["data"] = collections
-	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+	if len(collections) >= 1 {
+		collection = collections[0]
+		result["data"] = collection
+	} else {
+		result["data"] = ResponseCollection{}
+	}
 
 	return result, nil
 }
